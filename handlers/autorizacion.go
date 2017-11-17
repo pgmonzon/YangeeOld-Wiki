@@ -15,6 +15,7 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
 
   var aut models.Autorizar
   err := json.NewDecoder(req.Body).Decode(&aut)
+
   if err != nil || aut.Usuario == "" || aut.Clave == "" {
     var error models.Error
     error.Estado = "ERROR"
@@ -28,7 +29,7 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
     if err != nil {
       var error models.Error
       error.Estado = "ERROR"
-      error.Detalle = "Error al generar token"
+      error.Detalle = token.Token
       respuesta, err := json.Marshal(error)
       core.FatalErr(err)
       core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
