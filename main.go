@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-  fmt.Println(" **************************")
-  fmt.Println(" ¡¡¡ Wooow Yangee is up !!!")
-  fmt.Println(" **************************")
+  fmt.Println(" ***********************")
+  fmt.Println(" ¡¡¡ Wooow is Yangee !!!")
+  fmt.Println(" ***********************")
 
   config.Inicializar()
   routers.InicializarRutas()
