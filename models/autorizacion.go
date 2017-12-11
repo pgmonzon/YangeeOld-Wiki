@@ -1,15 +1,12 @@
 package models
 
 import (
-	"time"
-	
 	"github.com/dgrijalva/jwt-go"
 )
 
 type AutorizarToken struct {
-	Iss		string				`json:"iss"`
-	Pas		string				`json:"pas"`
-	iat		time.Time			`json:"iat"`
+	User 		string		`json:"user"`
+	Pass		string		`json:"pass"`
 }
 
 type Autorizar struct {
