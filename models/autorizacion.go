@@ -9,13 +9,13 @@ type AutorizarToken struct {
 	Pass		string		`json:"pass"`
 }
 
+type Token struct {
+  Token string `json:"token"`
+}
+
 type Autorizar struct {
 	Usuario		string				`json:"usuario"`
 	Clave 		string				`json:"clave"`
-}
-
-type Token struct {
-  Token string `json:"token"`
 }
 
 type TokenClaims struct {

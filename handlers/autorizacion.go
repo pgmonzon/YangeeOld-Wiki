@@ -9,18 +9,15 @@ import (
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
-  //"github.com/pgmonzon/Yangee/config"
+  "github.com/pgmonzon/Yangee/config"
 
   "github.com/dgrijalva/jwt-go"
-  //"github.com/dgrijalva/jwt-go/request"
   "github.com/mitchellh/mapstructure"
 )
 
 // Valida el token con las credenciales y devuelve el token para operar
 func Autorizar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
-  var err models.Error
-  var httpStat int
 
   authorizationHeader := req.Header.Get("authorization")
   if authorizationHeader != "" {
@@ -30,94 +27,68 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
           if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
               return nil, fmt.Errorf("There was an error")
           }
-          return []byte("secret"), nil
+          return []byte(config.SecretKey), nil
       })
       if error != nil {
-        err.Estado = "ERROR"
-        err.Detalle = "INVALID_PARAMS_04"
-        httpStat = http.StatusBadRequest
+        var resp models.Error
+        resp.Estado = "ERROR"
+        resp.Detalle = "INVALID_PARAMS_04"
+        respuesta, error := json.Marshal(resp)
+        core.FatalErr(error)
+        core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
       }
       if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
         var usuario models.AutorizarToken
         mapstructure.Decode(claims, &usuario)
-        err.Estado = "OK"
-        err.Detalle = usuario.User
+////////////////////////////////////////////////////////////////////////
+        token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+            "usr": usuario.User,
+            "iat": time.Now(),
+            "exp": time.Now().Add(time.Minute * config.ExpiraToken),
+        })
+        tokenString, error := token.SignedString([]byte(config.SecretKey))
+        if error != nil {
+          var resp models.Error
+          resp.Estado = "ERROR"
+          resp.Detalle = "INTERNAL_SERVER_ERROR_01"
+          respuesta, error := json.Marshal(resp)
+          core.FatalErr(error)
+          core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
+        }
+        var resp models.Token
+        resp.Token = tokenString
+        respuesta, error := json.Marshal(resp)
+        core.FatalErr(error)
+        core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+        /**
+        var resp models.Token
+        resp.Token = tokenString
         httpStat = http.StatusOK
+        **/
       } else {
-        err.Estado = "ERROR"
-        err.Detalle = "INVALID_PARAMS_02"
-        httpStat = http.StatusBadRequest
+        var resp models.Error
+        resp.Estado = "ERROR"
+        resp.Detalle = "INVALID_PARAMS_02"
+        respuesta, error := json.Marshal(resp)
+        core.FatalErr(error)
+        core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
       }
     } else {
-      err.Estado = "ERROR"
-      err.Detalle = "INVALID_PARAMS_03"
-      httpStat = http.StatusBadRequest
+      var resp models.Error
+      resp.Estado = "ERROR"
+      resp.Detalle = "INVALID_PARAMS_03"
+      respuesta, error := json.Marshal(resp)
+      core.FatalErr(error)
+      core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
     }
   } else {
-    err.Estado = "ERROR"
-    err.Detalle = "INVALID_PARAMS_01"
-    httpStat = http.StatusBadRequest
+    var resp models.Error
+    resp.Estado = "ERROR"
+    resp.Detalle = "INVALID_PARAMS_01"
+    respuesta, error := json.Marshal(resp)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
   }
-
-  respuesta, error := json.Marshal(err)
-  core.FatalErr(error)
-  core.RespuestaJSON(w, req, start, respuesta, httpStat)
-  return
-/**
-///////////////////////////////////////////////////////////
-  if authorizationHeader != "" {
-      bearerToken := strings.Split(authorizationHeader, " ")
-      if len(bearerToken) == 2 {
-          token, error := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
-              if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-                  return nil, fmt.Errorf("There was an error")
-              }
-              return []byte("secret"), nil
-          })
-          if error != nil {
-              json.NewEncoder(w).Encode(Exception{Message: error.Error()})
-              return
-          }
-          if token.Valid {
-              context.Set(req, "decoded", token.Claims)
-              next(w, req)
-          } else {
-              json.NewEncoder(w).Encode(Exception{Message: "Invalid authorization token"})
-          }
-      }
-  } else {
-      json.NewEncoder(w).Encode(Exception{Message: "An authorization header is required"})
-  }
-  //////////////////////////////////////////////
-  start := time.Now()
-  var err models.Error
-  var httpStat int
-
-  token, error := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.AutorizarToken{}, func(token *jwt.Token) (interface{}, error) {
-    return config.SecretKey, nil
-  })
-
-  if error == nil {
-    err.Estado = "ERROR"
-    err.Detalle = "INVALID_PARAMS_01"
-    httpStat = http.StatusBadRequest
-  }
-
-  if token.Valid{
-    err.Estado = "OK"
-    err.Detalle = token.Claims.(*models.AutorizarToken).Pas
-    httpStat = http.StatusOK
-  } else {
-    err.Estado = "ERROR"
-    err.Detalle = "INVALID_PARAMS_02"
-    httpStat = http.StatusBadRequest
-  }
-  respuesta, error := json.Marshal(err)
-  core.FatalErr(error)
-  core.RespuestaJSON(w, req, start, respuesta, httpStat)
-  return
-  ///////////////////////////////////////////////////////////////////
-**/
 }
 
 // Valida las credenciales del usuario y devuelve un Token
