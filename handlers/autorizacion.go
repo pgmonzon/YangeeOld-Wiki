@@ -15,8 +15,53 @@ import (
   "github.com/mitchellh/mapstructure"
 )
 
-// Valida el token con las credenciales y devuelve el token para operar
 func Autorizar(w http.ResponseWriter, req *http.Request) {
+  start := time.Now()
+
+  token, err, httpStat := core.ObtenerToken(req.Header.Get("authorization"))
+  if err != nil {
+    var resp models.Error
+    resp.Estado = "ERROR"
+    resp.Detalle = err.Error()
+    respuesta, error := json.Marshal(resp)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, httpStat)
+  } else {
+    respuesta, error := json.Marshal(token)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, httpStat)
+  }
+/**
+  var aut models.AutorizarToken
+
+  aut, err, httpStat := core.ValidarAutorizacion(req.Header.Get("authorization"))
+  if err != nil {
+    // No se pudo validar el token de autorización
+    var resp models.Error
+    resp.Estado = "ERROR"
+    resp.Detalle = err.Error()
+    respuesta, error := json.Marshal(resp)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, httpStat)
+  } else {
+    token, err, httpStat := core.GenerarToken(aut)
+    if err != nil {
+      var resp models.Error
+      resp.Estado = "ERROR"
+      resp.Detalle = err.Error()
+      respuesta, error := json.Marshal(resp)
+      core.FatalErr(error)
+      core.RespuestaJSON(w, req, start, respuesta, httpStat)
+    }
+    respuesta, error := json.Marshal(token)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, httpStat)
+  }
+**/
+}
+
+// Valida el token con las credenciales y devuelve el token para operar
+func Autorizar_bis(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 
   authorizationHeader := req.Header.Get("authorization")
@@ -40,7 +85,6 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
       if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
         var usuario models.AutorizarToken
         mapstructure.Decode(claims, &usuario)
-////////////////////////////////////////////////////////////////////////
         token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
             "usr": usuario.User,
             "iat": time.Now(),
@@ -60,11 +104,6 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
         respuesta, error := json.Marshal(resp)
         core.FatalErr(error)
         core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
-        /**
-        var resp models.Token
-        resp.Token = tokenString
-        httpStat = http.StatusOK
-        **/
       } else {
         var resp models.Error
         resp.Estado = "ERROR"
