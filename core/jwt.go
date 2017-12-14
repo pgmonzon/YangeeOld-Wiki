@@ -70,22 +70,3 @@ func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
   token.Token = tokenString
   return token, nil, http.StatusOK
 }
-
-func CrearToken(aut models.Autorizar) (string, error) {
-  token := jwt.New(jwt.SigningMethodRS256)
-
-  token.Claims = &models.TokenClaims{
-    &jwt.StandardClaims{
-      ExpiresAt: time.Now().Add(time.Minute * config.ExpiraToken).Unix(),
-    },
-    aut.Usuario,
-    aut.Clave,
-  }
-
-  tokenString, err := token.SignedString(config.SignKey)
-  if err != nil {
-    return "Error firmando el token", err
-  }
-
-  return tokenString, nil
-}
