@@ -23,6 +23,7 @@ const(
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
   ExpiraToken   = 720 // en minutos
+  SecretKey = "3113yangee1331"
 )
 
 var (
