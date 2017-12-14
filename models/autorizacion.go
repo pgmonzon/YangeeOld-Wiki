@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/dgrijalva/jwt-go"
 )
 
 type AutorizarToken struct {
@@ -11,15 +10,4 @@ type AutorizarToken struct {
 
 type Token struct {
   Token string `json:"token"`
-}
-
-type Autorizar struct {
-	Usuario		string				`json:"usuario"`
-	Clave 		string				`json:"clave"`
-}
-
-type TokenClaims struct {
-  *jwt.StandardClaims
-	Usuario		string				`json:"usuario"`
-	Clave			string				`json:"clave"`
 }
