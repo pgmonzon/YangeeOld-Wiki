@@ -22,6 +22,5 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
       core.RespuestaJSON(w, req, start, respuesta, httpStat)
     }
   }
-
   return
 }

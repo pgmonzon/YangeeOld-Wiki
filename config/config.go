@@ -15,8 +15,9 @@ const(
   //DB_Host = "mongodb://127.0.0.1:27017"
   //DB_Host = "mongodb://yng_user:laser@ds021326.mlab.com:21326/yangee"
   DB_Name = "yangee"
-  DB_User = "yng_Usr"
-  DB_Pass = "1962Laser"
+  DB_User = "yangee"
+  DB_Pass = "1331"
+  DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transaction"
 
   DB_Usuario = "usuario" // tabla de usuarios

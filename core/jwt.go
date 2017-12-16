@@ -38,7 +38,8 @@ func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, err
           return []byte(config.SecretKey), nil
       })
       if error != nil {
-        return aut, error, http.StatusBadRequest
+        s := []string{"INVALID_PARAMS:", error.Error()}
+        return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
       }
       if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
         mapstructure.Decode(claims, &aut)
