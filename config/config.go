@@ -19,6 +19,8 @@ const(
   DB_Pass = "1962Laser"
   DB_Transaction = "transaction"
 
+  DB_Usuario = "usuario" // tabla de usuarios
+
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"

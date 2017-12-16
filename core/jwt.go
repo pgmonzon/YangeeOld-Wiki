@@ -47,7 +47,7 @@ func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, err
         return aut, fmt.Errorf("INVALID_PARAMS: El token no es válido"), http.StatusBadRequest
       }
     } else {
-      return aut, fmt.Errorf("INVALID_PARAMS: La key Authorization no tiene el prefijo Bearer  y un espacio antes del token. Ej. Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOiIyMDE3LTEyLTE1VDA2OjAwOjI2Ljg2NzYwNy0wMzowMCIsImlhdCI6IjIwMTctMTItMTRUMTg6MDA6MjYuODY3NjA3LTAzOjAwIiwidXNyIjoicGF0cmljaW8ifQ.x2XCKumE50k65swtqksf6HFxzw48qmTQ_TeJ4arO2X0"), http.StatusBadRequest
+      return aut, fmt.Errorf("INVALID_PARAMS: La key Authorization no tiene el prefijo Bearer  y un espacio antes del token"), http.StatusBadRequest
     }
   } else {
     return aut, fmt.Errorf("INVALID_PARAMS: Está vacía la key Authorization en el header"), http.StatusBadRequest

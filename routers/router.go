@@ -15,5 +15,8 @@ func InicializarRutas() {
   // Autorización: Genera token
 	router.HandleFunc("/autorizar", handlers.Autorizar).Methods("POST")
 
+	// Usuario
+	router.HandleFunc("/registrar", handlers.UsuarioRegistrar).Methods("POST")
+
 	log.Fatal(http.ListenAndServe(":3113", router))
 }
