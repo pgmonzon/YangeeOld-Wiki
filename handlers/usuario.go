@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "net/http"
   "fmt"
+  "strings"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -41,16 +42,21 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
         usuario.Mail = usuarioRegistrar.Mail
 
         // Genero una nueva sesión Mongo
-        session := core.GetMongoSession()
-        defer session.Close()
-
-        // Intento el alta
-        collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-        err = collection.Insert(usuario)
+        session, err, httpStat := core.GetMongoSession()
         if err != nil {
-          core.RespErrorJSON(w, req, start, err, http.StatusInternalServerError)
+          core.RespErrorJSON(w, req, start, err, httpStat)
         } else {
-          core.RespOkJSON(w, req, start, "Ok", http.StatusCreated)
+          defer session.Close()
+
+          // Intento el alta
+          collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+          err = collection.Insert(usuario)
+          if err != nil {
+            s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
+            core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError)
+          } else {
+            core.RespOkJSON(w, req, start, "Ok", http.StatusCreated)
+          }
         }
       }
     }
@@ -61,27 +67,32 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
 func UsuarioExiste(usuarioExiste string) (error, int) {
   var usuario models.Usuario
   // Genero una nueva sesión Mongo
-  session := core.GetMongoSession()
-  defer session.Close()
-
-  // Me aseguro el índice
-  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-  index := mgo.Index{
-    Key:        []string{"usuario"},
-    Unique:     true,
-    DropDups:   true,
-    Background: true,
-    Sparse:     true,
-  }
-  err := collection.EnsureIndex(index)
+  session, err, httpStat := core.GetMongoSession()
   if err != nil {
-    return err, http.StatusInternalServerError
-  }
-
-  collection.Find(bson.M{"usuario": usuarioExiste}).One(&usuario)
-  if usuario.ID == "" {
-    return nil, http.StatusOK
+    return err, httpStat
   } else {
-    return fmt.Errorf("INVALID_PARAMS: El usuario ya existe"), http.StatusBadRequest
+    defer session.Close()
+
+    // Me aseguro el índice
+    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+    index := mgo.Index{
+      Key:        []string{"usuario"},
+      Unique:     true,
+      DropDups:   true,
+      Background: true,
+      Sparse:     true,
+    }
+    err := collection.EnsureIndex(index)
+    if err != nil {
+      s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
+      return fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
+    }
+
+    collection.Find(bson.M{"usuario": usuarioExiste}).One(&usuario)
+    if usuario.ID == "" {
+      return nil, http.StatusOK
+    } else {
+      return fmt.Errorf("INVALID_PARAMS: El usuario ya existe"), http.StatusBadRequest
+    }
   }
 }
