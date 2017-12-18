@@ -21,13 +21,14 @@ const(
   DB_Transaction = "transaction"
 
   DB_Usuario = "usuario" // tabla de usuarios
+  DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
 
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
   ExpiraToken   = 720 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 10000 // en minutos - Expiración del token de autorización
-  SecretKey = "3113yangee1331"
+  SecretKey = "1331"
 )
 
 var (
