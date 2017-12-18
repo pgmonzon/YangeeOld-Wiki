@@ -11,12 +11,13 @@ import (
 
   "github.com/dgrijalva/jwt-go"
   "github.com/mitchellh/mapstructure"
+  "gopkg.in/mgo.v2/bson"
 )
 
 // Valida el token de autorizacion y devuelve el token para operar
-func ObtenerToken(authorizationHeader string) (models.Token, error, int) {
+func ObtenerToken(authorizationHeader string, clienteAPIHeader string) (models.Token, error, int) {
   var token models.Token
-  aut, err, httpStat := ValidarAutorizacion(authorizationHeader)
+  aut, err, httpStat := ValidarAutorizacion(authorizationHeader, clienteAPIHeader)
   if err != nil {
     return token, err, httpStat
   } else {
@@ -26,8 +27,13 @@ func ObtenerToken(authorizationHeader string) (models.Token, error, int) {
 }
 
 // Valida el token de autorización y devuelve el usuario
-func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, error, int) {
+func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (models.AutorizarToken, error, int) {
   var aut models.AutorizarToken
+  firma, err, httpStat := ClienteTraerFirma(clienteAPIHeader)
+  if err != nil {
+    return aut, err, httpStat
+  }
+
   if authorizationHeader != "" {
     bearerToken := strings.Split(authorizationHeader, " ")
     if len(bearerToken) == 2 {
@@ -35,7 +41,7 @@ func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, err
           if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
               return nil, fmt.Errorf("INVALID_PARAMS: El token no es válido")
           }
-          return []byte(config.SecretKey), nil
+          return []byte(firma), nil
       })
       if error != nil {
         s := []string{"INVALID_PARAMS:", error.Error()}
@@ -43,7 +49,12 @@ func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, err
       }
       if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
         mapstructure.Decode(claims, &aut)
-        return aut, nil, http.StatusOK
+        // valida la fecha de creación del token de autorización
+        if aut.Iat >= time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() && aut.Iat <= time.Now().Add(time.Minute * config.ExpiraTokenAut).Unix() {
+          return aut, nil, http.StatusOK
+        } else {
+          return aut, fmt.Errorf("INVALID_PARAMS: La fecha del token no es válida"), http.StatusBadRequest
+        }
       } else {
         return aut, fmt.Errorf("INVALID_PARAMS: El token no es válido"), http.StatusBadRequest
       }
@@ -61,13 +72,33 @@ func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
 
   jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
       "usr": aut.User,
-      "iat": time.Now(),
-      "exp": time.Now().Add(time.Minute * config.ExpiraToken),
+      "iat": time.Now().Unix(),
+      "exp": time.Now().Add(time.Minute * config.ExpiraToken).Unix(),
   })
+
   tokenString, error := jwtToken.SignedString([]byte(config.SecretKey))
   if error != nil {
     return token, fmt.Errorf("INTERNAL_SERVER_ERROR: No pudimos firmar el token"), http.StatusInternalServerError
   }
   token.Token = tokenString
   return token, nil, http.StatusOK
+}
+
+func ClienteTraerFirma(clienteAPIHeader string) (string, error, int) {
+  var clienteAPI models.ClienteAPI
+  // Genero una nueva sesión Mongo
+  session, err, httpStat := GetMongoSession()
+  if err != nil {
+    return "", err, httpStat
+  } else {
+    defer session.Close()
+
+    collection := session.DB(config.DB_Name).C(config.DB_ClienteAPI)
+    collection.Find(bson.M{"clienteapi": clienteAPIHeader}).One(&clienteAPI)
+    if clienteAPI.Firma == "" {
+      return "", fmt.Errorf("INVALID_PARAMS: El cliente API no tiene firma"), http.StatusBadRequest
+    } else {
+      return clienteAPI.Firma, nil, http.StatusOK
+    }
+  }
 }

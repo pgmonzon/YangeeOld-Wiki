@@ -18,5 +18,8 @@ func InicializarRutas() {
 	// Usuario
 	router.HandleFunc("/registrar", handlers.UsuarioRegistrar).Methods("POST")
 
+	// ClienteAPI
+	router.HandleFunc("/clienteAPI/alta", handlers.ClienteAPIAlta).Methods("POST")
+
 	log.Fatal(http.ListenAndServe(":3113", router))
 }
