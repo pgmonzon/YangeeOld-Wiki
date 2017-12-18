@@ -43,7 +43,12 @@ func ValidarAutorizacion(authorizationHeader string) (models.AutorizarToken, err
       }
       if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
         mapstructure.Decode(claims, &aut)
-        return aut, nil, http.StatusOK
+        // valida la fecha de creación del token de autorización
+        if aut.Iat >= time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() && aut.Iat <= time.Now().Add(time.Minute * config.ExpiraTokenAut).Unix() {
+          return aut, nil, http.StatusOK
+        } else {
+          return aut, fmt.Errorf("INVALID_PARAMS: La fecha del token no es válida"), http.StatusBadRequest
+        }
       } else {
         return aut, fmt.Errorf("INVALID_PARAMS: El token no es válido"), http.StatusBadRequest
       }
@@ -61,8 +66,8 @@ func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
 
   jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
       "usr": aut.User,
-      "iat": time.Now(),
-      "exp": time.Now().Add(time.Minute * config.ExpiraToken),
+      "iat": time.Now().Unix(),
+      "exp": time.Now().Add(time.Minute * config.ExpiraToken).Unix(),
   })
   tokenString, error := jwtToken.SignedString([]byte(config.SecretKey))
   if error != nil {
