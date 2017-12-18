@@ -1,4 +1,4 @@
-package core
+package handlers
 
 import (
   "time"
@@ -11,7 +11,6 @@ import (
 
   "github.com/dgrijalva/jwt-go"
   "github.com/mitchellh/mapstructure"
-  "gopkg.in/mgo.v2/bson"
 )
 
 // Valida el token de autorizacion y devuelve el token para operar
@@ -29,7 +28,7 @@ func ObtenerToken(authorizationHeader string, clienteAPIHeader string) (models.T
 // Valida el token de autorización y devuelve el usuario
 func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (models.AutorizarToken, error, int) {
   var aut models.AutorizarToken
-  firma, err, httpStat := ClienteTraerFirma(clienteAPIHeader)
+  firma, err, httpStat := ClienteAPITraerFirma(clienteAPIHeader)
   if err != nil {
     return aut, err, httpStat
   }
@@ -82,23 +81,4 @@ func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
   }
   token.Token = tokenString
   return token, nil, http.StatusOK
-}
-
-func ClienteTraerFirma(clienteAPIHeader string) (string, error, int) {
-  var clienteAPI models.ClienteAPI
-  // Genero una nueva sesión Mongo
-  session, err, httpStat := GetMongoSession()
-  if err != nil {
-    return "", err, httpStat
-  } else {
-    defer session.Close()
-
-    collection := session.DB(config.DB_Name).C(config.DB_ClienteAPI)
-    collection.Find(bson.M{"clienteapi": clienteAPIHeader}).One(&clienteAPI)
-    if clienteAPI.Firma == "" {
-      return "", fmt.Errorf("INVALID_PARAMS: El cliente API no tiene firma"), http.StatusBadRequest
-    } else {
-      return clienteAPI.Firma, nil, http.StatusOK
-    }
-  }
 }

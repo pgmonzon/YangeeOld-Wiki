@@ -11,7 +11,7 @@ import (
 func Autorizar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 
-  token, err, httpStat := core.ObtenerToken(req.Header.Get("authorization"), req.Header.Get("API_ClienteID"))
+  token, err, httpStat := ObtenerToken(req.Header.Get("authorization"), req.Header.Get("API_ClienteID"))
   if err != nil {
     core.RespErrorJSON(w, req, start, err, httpStat)
   } else {

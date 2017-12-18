@@ -28,7 +28,7 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
     if usuarioRegistrar.Usuario == "" || usuarioRegistrar.Clave == "" || usuarioRegistrar.Mail == "" {
       core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: Usuario, clave y mail no pueden estar vacíos"), http.StatusBadRequest)
     } else {
-      // me fijo si no existe el usuarioRegistrar
+      // me fijo si no existe el usuario
       err, httpStat := UsuarioExiste(usuarioRegistrar.Usuario)
       if err != nil {
         core.RespErrorJSON(w, req, start, err, httpStat)
