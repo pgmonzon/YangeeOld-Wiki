@@ -39,6 +39,7 @@ func ClienteAPIAlta(w http.ResponseWriter, req *http.Request) {
       	clienteAPI.ID = objID
         clienteAPI.ClienteAPI = clienteAPIAlta.ClienteAPI
         clienteAPI.Firma = clienteAPIAlta.Firma
+        clienteAPI.Aes = clienteAPIAlta.Aes
 
         // Genero una nueva sesión Mongo
         session, err, httpStat := core.GetMongoSession()
@@ -112,5 +113,20 @@ func ClienteAPITraerFirma(clienteAPIHeader string) (string, error, int) {
     } else {
       return clienteAPI.Firma, nil, http.StatusOK
     }
+  }
+}
+
+func ClienteAPITraer(cteAPI string) (models.ClienteAPI, error, int) {
+  var clienteAPI models.ClienteAPI
+  // Genero una nueva sesión Mongo
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return clienteAPI, err, httpStat
+  } else {
+    defer session.Close()
+
+    collection := session.DB(config.DB_Name).C(config.DB_ClienteAPI)
+    collection.Find(bson.M{"clienteapi": cteAPI}).One(&clienteAPI)
+    return clienteAPI, nil, http.StatusOK
   }
 }
