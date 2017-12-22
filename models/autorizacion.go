@@ -5,21 +5,24 @@ import (
 )
 
 type AutorizarToken struct {
-	User 		string		`json:"user"`
-	Pass		string		`json:"pass"`
+	Usuario string		`json:"usuario"`
+	Clave		string		`json:"clave"`
+	Iat			int64	  	`json:"iat"`
+	Aud			string		`json:"aud"`
 }
 
 type Token struct {
   Token string `json:"token"`
 }
 
-type Autorizar struct {
-	Usuario		string				`json:"usuario"`
-	Clave 		string				`json:"clave"`
+type TokenAutorizar struct {
+	Usuario 	string		`json:"usuario"`
+	Clave			string		`json:"clave"`
+	Audience	string 		`json:"audience"`
 }
 
-type TokenClaims struct {
-  *jwt.StandardClaims
-	Usuario		string				`json:"usuario"`
-	Clave			string				`json:"clave"`
+type TokenAutorizarClaims struct {
+	Usuario 	string		`json:"usuario"`
+	Clave			string		`json:"clave"`
+	jwt.StandardClaims
 }

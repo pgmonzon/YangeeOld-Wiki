@@ -3,7 +3,7 @@ package models
 import (
 )
 
-type Error struct {
+type Respuesta struct {
   Estado string `json:"estado"`
   Detalle string `json:"detalle"`
 }

@@ -4,121 +4,84 @@ import (
   "net/http"
   "encoding/json"
   "time"
-  "strings"
   "fmt"
+  "strings"
 
-  "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
-  "github.com/pgmonzon/Yangee/config"
+  "github.com/pgmonzon/Yangee/models"
 
   "github.com/dgrijalva/jwt-go"
-  "github.com/mitchellh/mapstructure"
 )
 
-// Valida el token con las credenciales y devuelve el token para operar
 func Autorizar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 
-  authorizationHeader := req.Header.Get("authorization")
-  if authorizationHeader != "" {
-    bearerToken := strings.Split(authorizationHeader, " ")
-    if len(bearerToken) == 2 {
-      token, error := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
-          if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-              return nil, fmt.Errorf("There was an error")
-          }
-          return []byte(config.SecretKey), nil
-      })
-      if error != nil {
-        var resp models.Error
-        resp.Estado = "ERROR"
-        resp.Detalle = "INVALID_PARAMS_04"
-        respuesta, error := json.Marshal(resp)
-        core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-      }
-      if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-        var usuario models.AutorizarToken
-        mapstructure.Decode(claims, &usuario)
-////////////////////////////////////////////////////////////////////////
-        token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-            "usr": usuario.User,
-            "iat": time.Now(),
-            "exp": time.Now().Add(time.Minute * config.ExpiraToken),
-        })
-        tokenString, error := token.SignedString([]byte(config.SecretKey))
-        if error != nil {
-          var resp models.Error
-          resp.Estado = "ERROR"
-          resp.Detalle = "INTERNAL_SERVER_ERROR_01"
-          respuesta, error := json.Marshal(resp)
-          core.FatalErr(error)
-          core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
-        }
-        var resp models.Token
-        resp.Token = tokenString
-        respuesta, error := json.Marshal(resp)
-        core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
-        /**
-        var resp models.Token
-        resp.Token = tokenString
-        httpStat = http.StatusOK
-        **/
-      } else {
-        var resp models.Error
-        resp.Estado = "ERROR"
-        resp.Detalle = "INVALID_PARAMS_02"
-        respuesta, error := json.Marshal(resp)
-        core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-      }
-    } else {
-      var resp models.Error
-      resp.Estado = "ERROR"
-      resp.Detalle = "INVALID_PARAMS_03"
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-    }
+  token, err, httpStat := ObtenerToken(req.Header.Get("authorization"), req.Header.Get("API_ClienteID"))
+  if err != nil {
+    core.RespErrorJSON(w, req, start, err, httpStat)
   } else {
-    var resp models.Error
-    resp.Estado = "ERROR"
-    resp.Detalle = "INVALID_PARAMS_01"
-    respuesta, error := json.Marshal(resp)
-    core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    respuesta, error := json.Marshal(token)
+    if error != nil {
+      core.RespErrorJSON(w, req, start, error, httpStat)
+    } else {
+      core.RespuestaJSON(w, req, start, respuesta, httpStat)
+    }
   }
+  return
 }
 
-// Valida las credenciales del usuario y devuelve un Token
-func Autorizar_Anterior(w http.ResponseWriter, req *http.Request) {
-  start := time.Now()
+func TokenAutorizar(w http.ResponseWriter, req *http.Request) {
+	start := time.Now()
+	var tokenAutorizar models.TokenAutorizar
 
-  var aut models.Autorizar
-  err := json.NewDecoder(req.Body).Decode(&aut)
-
-  if err != nil || aut.Usuario == "" || aut.Clave == "" {
-    var error models.Error
-    error.Estado = "ERROR"
-    error.Detalle = "Parámetros Incorrectos"
-    respuesta, err := json.Marshal(error)
-    core.FatalErr(err)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&tokenAutorizar)
+  if err != nil {
+    core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: JSON decode erróneo"), http.StatusBadRequest)
   } else {
-    var token models.Token
-    token.Token, err = core.CrearToken(aut)
-    if err != nil {
-      var error models.Error
-      error.Estado = "ERROR"
-      error.Detalle = token.Token
-      respuesta, err := json.Marshal(error)
-      core.FatalErr(err)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
+    // campos obligatorios
+    if tokenAutorizar.Usuario == "" || tokenAutorizar.Clave == "" || tokenAutorizar.Audience == "" {
+      core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: Usuario, clave y audience no pueden estar vacíos"), http.StatusBadRequest)
     } else {
-      respuesta, err := json.Marshal(token)
-      core.FatalErr(err)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+      var token models.Token
+      var clienteAPI models.ClienteAPI
+
+      clienteAPI, err, httpStat := ClienteAPITraer(tokenAutorizar.Audience)
+      if err != nil {
+        core.RespErrorJSON(w, req, start, err, httpStat)
+        return
+      }
+
+      claveEncriptada, err, httpStat := core.Encriptar(clienteAPI.Aes, tokenAutorizar.Clave)
+      if err != nil {
+        core.RespErrorJSON(w, req, start, err, httpStat)
+        return
+      }
+
+      // Create the Claims
+      claims := models.TokenAutorizarClaims{
+          tokenAutorizar.Usuario,
+          claveEncriptada,
+          jwt.StandardClaims{
+              IssuedAt: time.Now().Unix(),
+              Audience: tokenAutorizar.Audience,
+          },
+      }
+      jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+      tokenString, error := jwtToken.SignedString([]byte(clienteAPI.Firma))
+      if error != nil {
+        core.RespErrorJSON(w, req, start, fmt.Errorf("INTERNAL_SERVER_ERROR: No pudimos firmar el token"), http.StatusInternalServerError)
+      } else {
+        token.Token = tokenString
+        respuesta, error := json.Marshal(token)
+        if error != nil {
+          s := []string{"INTERNAL_SERVER_ERROR:", error.Error()}
+          core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError)
+        } else {
+          core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+        }
+      }
     }
   }
+  return
 }

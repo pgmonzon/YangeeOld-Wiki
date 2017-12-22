@@ -15,15 +15,20 @@ const(
   //DB_Host = "mongodb://127.0.0.1:27017"
   //DB_Host = "mongodb://yng_user:laser@ds021326.mlab.com:21326/yangee"
   DB_Name = "yangee"
-  DB_User = "yng_Usr"
-  DB_Pass = "1962Laser"
+  DB_User = "yangee"
+  DB_Pass = "1331"
+  DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transaction"
+
+  DB_Usuario = "usuario" // tabla de usuarios
+  DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
 
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-  ExpiraToken   = 720 // en minutos
-  SecretKey = "3113yangee1331"
+  ExpiraToken   = 720 // en minutos - Expiración del token para operar
+  ExpiraTokenAut = 10000 // en minutos - Expiración del token de autorización
+  SecretKey = "1331"
 )
 
 var (
