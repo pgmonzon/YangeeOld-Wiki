@@ -5,8 +5,8 @@ import (
 )
 
 type AutorizarToken struct {
-	User 		string		`json:"user"`
-	Pass		string		`json:"pass"`
+	Usuario string		`json:"usuario"`
+	Clave		string		`json:"clave"`
 	Iat			int64	  	`json:"iat"`
 	Aud			string		`json:"aud"`
 }
