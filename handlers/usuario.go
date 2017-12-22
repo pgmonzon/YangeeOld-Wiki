@@ -72,9 +72,9 @@ func UsuarioExiste(usuarioExiste string) (error, int) {
     return err, httpStat
   } else {
     defer session.Close()
+    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
 
     // Me aseguro el índice
-    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
     index := mgo.Index{
       Key:        []string{"usuario"},
       Unique:     true,
@@ -93,6 +93,25 @@ func UsuarioExiste(usuarioExiste string) (error, int) {
       return nil, http.StatusOK
     } else {
       return fmt.Errorf("INVALID_PARAMS: El usuario ya existe"), http.StatusBadRequest
+    }
+  }
+}
+
+func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
+  var usuario models.Usuario
+  // Genero una nueva sesión Mongo
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return err, httpStat
+  } else {
+    defer session.Close()
+    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+
+    collection.Find(bson.M{"usuario": usuarioLogin, "clave": core.HashSha512(claveLogin)}).One(&usuario)
+    if usuario.ID == "" {
+      return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusBadRequest
+    } else {
+      return nil, http.StatusOK
     }
   }
 }

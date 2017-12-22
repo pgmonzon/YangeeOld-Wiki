@@ -8,6 +8,7 @@ import (
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/config"
+  "github.com/pgmonzon/Yangee/core"
 
   "github.com/dgrijalva/jwt-go"
   "github.com/mitchellh/mapstructure"
@@ -28,7 +29,9 @@ func ObtenerToken(authorizationHeader string, clienteAPIHeader string) (models.T
 // Valida el token de autorización y devuelve el usuario
 func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (models.AutorizarToken, error, int) {
   var aut models.AutorizarToken
-  firma, err, httpStat := ClienteAPITraerFirma(clienteAPIHeader)
+  var clienteAPI models.ClienteAPI
+
+  clienteAPI, err, httpStat := ClienteAPITraer(clienteAPIHeader)
   if err != nil {
     return aut, err, httpStat
   }
@@ -40,7 +43,7 @@ func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (m
           if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
               return nil, fmt.Errorf("INVALID_PARAMS: El token no es válido")
           }
-          return []byte(firma), nil
+          return []byte(clienteAPI.Firma), nil
       })
       if error != nil {
         s := []string{"INVALID_PARAMS:", error.Error()}
@@ -50,7 +53,17 @@ func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (m
         mapstructure.Decode(claims, &aut)
         // valida la fecha de creación del token de autorización
         if aut.Iat >= time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() && aut.Iat <= time.Now().Add(time.Minute * config.ExpiraTokenAut).Unix() {
-          return aut, nil, http.StatusOK
+          // aca tengo que validar que coincidan el usuario y la clave
+          claveDesencriptada, err, httpStat := core.Desencriptar(clienteAPI.Aes, aut.Clave)
+          if err != nil {
+            return aut, err, httpStat
+          }
+          err, httpStat = UsuarioLogin(aut.Usuario, claveDesencriptada)
+          if err != nil {
+            return aut, err, httpStat
+          } else {
+            return aut, nil, http.StatusOK
+          }
         } else {
           return aut, fmt.Errorf("INVALID_PARAMS: La fecha del token no es válida"), http.StatusBadRequest
         }
@@ -70,7 +83,7 @@ func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
   var token models.Token
 
   jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-      "usr": aut.User,
+      "usr": aut.Usuario,
       "iat": time.Now().Unix(),
       "exp": time.Now().Add(time.Minute * config.ExpiraToken).Unix(),
   })
