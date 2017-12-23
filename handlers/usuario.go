@@ -109,7 +109,7 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
 
     collection.Find(bson.M{"usuario": usuarioLogin, "clave": core.HashSha512(claveLogin)}).One(&usuario)
     if usuario.ID == "" {
-      return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusBadRequest
+      return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusForbidden
     } else {
       return nil, http.StatusOK
     }

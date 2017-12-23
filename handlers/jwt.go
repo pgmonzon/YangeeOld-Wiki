@@ -11,87 +11,111 @@ import (
   "github.com/pgmonzon/Yangee/core"
 
   "github.com/dgrijalva/jwt-go"
+  "github.com/dgrijalva/jwt-go/request"
   "github.com/mitchellh/mapstructure"
 )
 
-// Valida el token de autorizacion y devuelve el token para operar
-func ObtenerToken(authorizationHeader string, clienteAPIHeader string) (models.Token, error, int) {
-  var token models.Token
-  aut, err, httpStat := ValidarAutorizacion(authorizationHeader, clienteAPIHeader)
-  if err != nil {
-    return token, err, httpStat
-  } else {
-    token, err, httpStat := GenerarToken(aut)
-    return token, err, httpStat
-  }
-}
-
-// Valida el token de autorización y devuelve el usuario
-func ValidarAutorizacion(authorizationHeader string, clienteAPIHeader string) (models.AutorizarToken, error, int) {
-  var aut models.AutorizarToken
+// Valida el token generado por el cliente API
+func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.AutorizarTokenCliente, error, int) {
+  var aut models.AutorizarTokenCliente
   var clienteAPI models.ClienteAPI
 
-  clienteAPI, err, httpStat := ClienteAPITraer(clienteAPIHeader)
+  // Busco la firma y la clave de encriptación que usa el cliente API
+  clienteAPI, err, httpStat := ClienteAPITraer(req.Header.Get("API_ClienteID"))
   if err != nil {
     return aut, err, httpStat
   }
 
-  if authorizationHeader != "" {
-    bearerToken := strings.Split(authorizationHeader, " ")
-    if len(bearerToken) == 2 {
-      token, error := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
-          if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-              return nil, fmt.Errorf("INVALID_PARAMS: El token no es válido")
-          }
-          return []byte(clienteAPI.Firma), nil
-      })
-      if error != nil {
-        s := []string{"INVALID_PARAMS:", error.Error()}
-        return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
-      }
-      if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-        mapstructure.Decode(claims, &aut)
-        // valida la fecha de creación del token de autorización
-        if aut.Iat >= time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() && aut.Iat <= time.Now().Add(time.Minute * config.ExpiraTokenAut).Unix() {
-          // aca tengo que validar que coincidan el usuario y la clave
-          claveDesencriptada, err, httpStat := core.Desencriptar(clienteAPI.Aes, aut.Clave)
-          if err != nil {
-            return aut, err, httpStat
-          }
-          err, httpStat = UsuarioLogin(aut.Usuario, claveDesencriptada)
-          if err != nil {
-            return aut, err, httpStat
-          } else {
-            return aut, nil, http.StatusOK
-          }
+  token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.AutorizarTokenCliente{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(clienteAPI.Firma), nil
+		})
+
+	if err == nil {
+		if token.Valid {
+      claims := token.Claims.(*models.AutorizarTokenCliente)
+      mapstructure.Decode(claims, &aut)
+      if claims.IssuedAt >= time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() && claims.IssuedAt <= time.Now().Add(time.Minute * config.ExpiraTokenAut).Unix() {
+        claveDesencriptada, err, httpStat := core.Desencriptar(clienteAPI.Aes, claims.Pas)
+        if err != nil {
+          return aut, err, httpStat
+        }
+        err, httpStat = UsuarioLogin(claims.Usr, claveDesencriptada)
+        if err != nil {
+          return aut, err, httpStat
         } else {
-          return aut, fmt.Errorf("INVALID_PARAMS: La fecha del token no es válida"), http.StatusBadRequest
+          return aut, nil, http.StatusOK
         }
       } else {
-        return aut, fmt.Errorf("INVALID_PARAMS: El token no es válido"), http.StatusBadRequest
+        s := []string{"INVALID_PARAMS:", "La fecha es inválida"}
+        return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
       }
-    } else {
-      return aut, fmt.Errorf("INVALID_PARAMS: La key Authorization no tiene el prefijo Bearer  y un espacio antes del token"), http.StatusBadRequest
-    }
-  } else {
-    return aut, fmt.Errorf("INVALID_PARAMS: Está vacía la key Authorization en el header"), http.StatusBadRequest
-  }
+		} else {
+      s := []string{"INVALID_PARAMS:", err.Error()}
+      return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
+		}
+	} else {
+    s := []string{"INVALID_PARAMS:", err.Error()}
+    return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
+	}
 }
 
 // Genera el token para el usuario autorizado
-func GenerarToken(aut models.AutorizarToken) (models.Token, error, int) {
-  var token models.Token
+func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
+  var tokenAutorizado models.Token
 
-  jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-      "usr": aut.Usuario,
-      "iat": time.Now().Unix(),
-      "exp": time.Now().Add(time.Minute * config.ExpiraToken).Unix(),
-  })
+  token := jwt.New(jwt.SigningMethodRS256)
+  claims := make(jwt.MapClaims)
+  claims["usr"] = aut.Usr
+  claims["exp"] = time.Now().Add(time.Minute * config.ExpiraToken).Unix()
+	claims["iat"] = time.Now().Unix()
+  token.Claims = claims
 
-  tokenString, error := jwtToken.SignedString([]byte(config.SecretKey))
-  if error != nil {
-    return token, fmt.Errorf("INTERNAL_SERVER_ERROR: No pudimos firmar el token"), http.StatusInternalServerError
+	tokenString, err := token.SignedString(config.SignKey)
+
+	if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
+    return tokenAutorizado, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
+	}
+
+  tokenAutorizado.Token = tokenString
+  return tokenAutorizado, nil, http.StatusOK
+}
+
+func ValidarMiddleware(next http.HandlerFunc) http.HandlerFunc {
+  return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+    start := time.Now()
+
+    token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.TokenAutorizado{},
+  		func(token *jwt.Token) (interface{}, error) {
+  			return config.VerifyKey, nil
+  		})
+
+  if err == nil {
+    if token.Valid {
+      claims := token.Claims.(*models.TokenAutorizado)
+      if claims.ExpiresAt >= time.Now().Unix() {
+        // si no está expirado hago el next
+        //context.Set(req, "decoded", token.Claims)
+        next(w, req)
+      } else {
+        s := []string{"INVALID_PARAMS:", "Token expirado"}
+        core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+      }
+    } else {
+      s := []string{"INVALID_PARAMS:", err.Error()}
+      core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+    }
+  } else {
+    s := []string{"INVALID_PARAMS:", err.Error()}
+    core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
   }
-  token.Token = tokenString
-  return token, nil, http.StatusOK
+  })
+}
+
+func TestEndpoint(w http.ResponseWriter, req *http.Request) {
+  start := time.Now()
+
+  s := []string{"OK:", "Test Endpoint"}
+  core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusOK)
 }

@@ -14,7 +14,8 @@ func InicializarRutas() {
 
   // Autorización: Genera token para operar
 	router.HandleFunc("/autorizar", handlers.Autorizar).Methods("POST")
-	router.HandleFunc("/tokenAutorizar", handlers.TokenAutorizar).Methods("POST")
+	router.HandleFunc("/tokenCliente", handlers.TokenCliente).Methods("POST")
+	router.HandleFunc("/test", handlers.ValidarMiddleware(handlers.TestEndpoint)).Methods("GET")
 
 	// Usuario
 	router.HandleFunc("/registrar", handlers.UsuarioRegistrar).Methods("POST")
