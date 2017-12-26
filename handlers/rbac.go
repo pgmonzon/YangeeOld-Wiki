@@ -15,31 +15,39 @@ import (
   "gopkg.in/mgo.v2/bson"
 )
 
-func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
+func PermisoAlta(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-	var usuarioRegistrar models.UsuarioRegistrar
+	var permisoAlta models.PermisoAlta
 
   decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&usuarioRegistrar)
+  err := decoder.Decode(&permisoAlta)
   if err != nil {
     core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: JSON decode erróneo"), http.StatusBadRequest)
   } else {
     // campos obligatorios
-    if usuarioRegistrar.Usuario == "" || usuarioRegistrar.Clave == "" || usuarioRegistrar.Mail == "" {
-      core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: Usuario, clave y mail no pueden estar vacíos"), http.StatusBadRequest)
+    if permisoAlta.Permiso == "" {
+      core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: Permiso no puede estar vacío"), http.StatusBadRequest)
     } else {
       // me fijo si no existe el usuario
-      err, httpStat := UsuarioExiste(usuarioRegistrar.Usuario)
+      err, httpStat := PermisoExiste(permisoAlta.Permiso)
       if err != nil {
         core.RespErrorJSON(w, req, start, err, httpStat)
       } else {
         // establezco los campos
-        var usuario models.Usuario
+        var permiso models.Permiso
       	objID := bson.NewObjectId()
-      	usuario.ID = objID
-        usuario.Usuario = usuarioRegistrar.Usuario
-        usuario.Clave = core.HashSha512(usuarioRegistrar.Clave)
-        usuario.Mail = usuarioRegistrar.Mail
+      	permiso.ID = objID
+        permiso.Permiso = permisoAlta.Permiso
+        if permiso.Activo == "" {
+          permiso.Activo = true
+        } else {
+          permiso.Activo = permisoAlta.Activo
+        }
+        if permiso.Borrado == "" {
+          permiso.Borrado = false
+        } else {
+          permiso.Borrado = permisoAlta.Borrado
+        }
 
         // Genero una nueva sesión Mongo
         session, err, httpStat := core.GetMongoSession()
@@ -49,8 +57,8 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
           defer session.Close()
 
           // Intento el alta
-          collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-          err = collection.Insert(usuario)
+          collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+          err = collection.Insert(permiso)
           if err != nil {
             s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
             core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError)
@@ -64,8 +72,8 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func UsuarioExiste(usuarioExiste string) (error, int) {
-  var usuario models.Usuario
+func PermisoExiste(permisoExiste string) (error, int) {
+  var permiso models.Permiso
   // Genero una nueva sesión Mongo
   session, err, httpStat := core.GetMongoSession()
   if err != nil {
@@ -76,7 +84,7 @@ func UsuarioExiste(usuarioExiste string) (error, int) {
 
     // Me aseguro el índice
     index := mgo.Index{
-      Key:        []string{"usuario"},
+      Key:        []string{"permiso"},
       Unique:     true,
       DropDups:   false,
       Background: true,
@@ -88,30 +96,11 @@ func UsuarioExiste(usuarioExiste string) (error, int) {
       return fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
     }
 
-    collection.Find(bson.M{"usuario": usuarioExiste}).One(&usuario)
-    if usuario.ID == "" {
+    collection.Find(bson.M{"permiso": permisoExiste}).One(&permiso)
+    if permiso.ID == "" {
       return nil, http.StatusOK
     } else {
       return fmt.Errorf("INVALID_PARAMS: El usuario ya existe"), http.StatusBadRequest
-    }
-  }
-}
-
-func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
-  var usuario models.Usuario
-  // Genero una nueva sesión Mongo
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    return err, httpStat
-  } else {
-    defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-
-    collection.Find(bson.M{"usuario": usuarioLogin, "clave": core.HashSha512(claveLogin)}).One(&usuario)
-    if usuario.ID == "" {
-      return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusForbidden
-    } else {
-      return nil, http.StatusOK
     }
   }
 }
