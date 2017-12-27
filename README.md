@@ -2,8 +2,8 @@ Yangee
 
 Arrancar base de datos Mongo: En el administrador de comandos abierto en modo administrador
 
-		C:>cd C:\Program Files\MongoDB\Server\3.4\bin
-		C:\Program Files\MongoDB\Server\3.4\bin>mng.bat
+		C:>cd C:\Program Files\MongoDB\Server\3.6\bin
+		C:\Program Files\MongoDB\Server\3.6\bin>mng.bat
 
 Administrador de la base de datos: Robomongo
 
