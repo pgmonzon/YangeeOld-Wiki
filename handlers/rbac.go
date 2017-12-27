@@ -38,12 +38,12 @@ func PermisoAlta(w http.ResponseWriter, req *http.Request) {
       	objID := bson.NewObjectId()
       	permiso.ID = objID
         permiso.Permiso = permisoAlta.Permiso
-        if permiso.Activo == "" {
+        if permiso.Activo != true && permiso.Activo != false {
           permiso.Activo = true
         } else {
           permiso.Activo = permisoAlta.Activo
         }
-        if permiso.Borrado == "" {
+        if permiso.Borrado != true && permiso.Borrado != false {
           permiso.Borrado = false
         } else {
           permiso.Borrado = permisoAlta.Borrado
@@ -80,7 +80,7 @@ func PermisoExiste(permisoExiste string) (error, int) {
     return err, httpStat
   } else {
     defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+    collection := session.DB(config.DB_Name).C(config.DB_Permiso)
 
     // Me aseguro el índice
     index := mgo.Index{
@@ -100,7 +100,7 @@ func PermisoExiste(permisoExiste string) (error, int) {
     if permiso.ID == "" {
       return nil, http.StatusOK
     } else {
-      return fmt.Errorf("INVALID_PARAMS: El usuario ya existe"), http.StatusBadRequest
+      return fmt.Errorf("INVALID_PARAMS: El permiso ya existe"), http.StatusBadRequest
     }
   }
 }

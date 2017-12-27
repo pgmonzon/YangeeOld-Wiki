@@ -27,7 +27,7 @@ const(
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-  ExpiraToken   = 1 // en minutos - Expiración del token para operar
+  ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
 )
 
