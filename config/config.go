@@ -23,6 +23,7 @@ const(
   DB_Usuario = "usuario" // tabla de usuarios
   DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
   DB_Permiso = "permiso" // tabla de permisos
+  DB_Rol = "rol" // tabla de roles
 
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"

@@ -24,7 +24,8 @@ func InicializarRutas() {
 	router.HandleFunc("/clienteAPI/alta", handlers.ClienteAPIAlta).Methods("POST")
 
 	// RBAC
-	router.HandleFunc("/permiso", handlers.ValidarMiddleware(handlers.PermisoAlta)).Methods("POST")
+	router.HandleFunc("/permiso", handlers.ValidarMiddleware(handlers.PermisoAgregar)).Methods("POST")
+	router.HandleFunc("/rol", handlers.ValidarMiddleware(handlers.RolAgregar)).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":3113", router))
 }
