@@ -51,9 +51,7 @@ func PermisoAgregar(w http.ResponseWriter, req *http.Request) {
 
       // Recorro el JSON
       for _, item := range Permisos.Permisos {
-        // Me fijo si ya existe
-        err := PermisoExiste(item.Permiso)
-        if err != nil {
+        if item.Permiso == "" {
           if resp.EstadoGral != "PARCIAL" {
             if resp.EstadoGral == "OK" {
               resp.EstadoGral = "PARCIAL"
@@ -63,15 +61,12 @@ func PermisoAgregar(w http.ResponseWriter, req *http.Request) {
           }
           mensaje.Valor = item.Permiso
           mensaje.Estado = "ERROR"
-          mensaje.Mensaje = err.Error()
+          s := []string{"INTERNAL_SERVER_ERROR: ", "El campo Permiso no puede estar vacío"}
+          mensaje.Mensaje = strings.Join(s, "")
           resp.Mensajes = append(resp.Mensajes, mensaje)
         } else {
-          objID := bson.NewObjectId()
-        	item.ID = objID
-
-          // Intento el alta
-          collection := session.DB(config.DB_Name).C(config.DB_Permiso)
-          err = collection.Insert(item)
+          // Me fijo si ya existe
+          err := PermisoExiste(item.Permiso)
           if err != nil {
             if resp.EstadoGral != "PARCIAL" {
               if resp.EstadoGral == "OK" {
@@ -82,21 +77,41 @@ func PermisoAgregar(w http.ResponseWriter, req *http.Request) {
             }
             mensaje.Valor = item.Permiso
             mensaje.Estado = "ERROR"
-            s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-            mensaje.Mensaje = strings.Join(s, "")
+            mensaje.Mensaje = err.Error()
             resp.Mensajes = append(resp.Mensajes, mensaje)
           } else {
-            if resp.EstadoGral != "PARCIAL" {
-              if resp.EstadoGral == "ERROR" {
-                resp.EstadoGral = "PARCIAL"
-              } else {
-                resp.EstadoGral = "OK"
+            objID := bson.NewObjectId()
+          	item.ID = objID
+
+            // Intento el alta
+            collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+            err = collection.Insert(item)
+            if err != nil {
+              if resp.EstadoGral != "PARCIAL" {
+                if resp.EstadoGral == "OK" {
+                  resp.EstadoGral = "PARCIAL"
+                } else {
+                  resp.EstadoGral = "ERROR"
+                }
               }
+              mensaje.Valor = item.Permiso
+              mensaje.Estado = "ERROR"
+              s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+              mensaje.Mensaje = strings.Join(s, "")
+              resp.Mensajes = append(resp.Mensajes, mensaje)
+            } else {
+              if resp.EstadoGral != "PARCIAL" {
+                if resp.EstadoGral == "ERROR" {
+                  resp.EstadoGral = "PARCIAL"
+                } else {
+                  resp.EstadoGral = "OK"
+                }
+              }
+              mensaje.Valor = item.Permiso
+              mensaje.Estado = "OK"
+              mensaje.Mensaje = "OK"
+              resp.Mensajes = append(resp.Mensajes, mensaje)
             }
-            mensaje.Valor = item.Permiso
-            mensaje.Estado = "OK"
-            mensaje.Mensaje = "OK"
-            resp.Mensajes = append(resp.Mensajes, mensaje)
           }
         }
       }
@@ -184,9 +199,7 @@ func RolAgregar(w http.ResponseWriter, req *http.Request) {
 
       // Recorro el JSON
       for _, item := range Roles.Roles {
-        // Me fijo si ya existe
-        err := RolExiste(item.Rol)
-        if err != nil {
+        if item.Rol == "" {
           if resp.EstadoGral != "PARCIAL" {
             if resp.EstadoGral == "OK" {
               resp.EstadoGral = "PARCIAL"
@@ -196,15 +209,12 @@ func RolAgregar(w http.ResponseWriter, req *http.Request) {
           }
           mensaje.Valor = item.Rol
           mensaje.Estado = "ERROR"
-          mensaje.Mensaje = err.Error()
+          s := []string{"INTERNAL_SERVER_ERROR: ", "El campo Rol no puede estar vacío"}
+          mensaje.Mensaje = strings.Join(s, "")
           resp.Mensajes = append(resp.Mensajes, mensaje)
         } else {
-          objID := bson.NewObjectId()
-        	item.ID = objID
-
-          // Intento el alta
-          collection := session.DB(config.DB_Name).C(config.DB_Rol)
-          err = collection.Insert(item)
+          // Me fijo si ya existe
+          err := RolExiste(item.Rol)
           if err != nil {
             if resp.EstadoGral != "PARCIAL" {
               if resp.EstadoGral == "OK" {
@@ -215,21 +225,41 @@ func RolAgregar(w http.ResponseWriter, req *http.Request) {
             }
             mensaje.Valor = item.Rol
             mensaje.Estado = "ERROR"
-            s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-            mensaje.Mensaje = strings.Join(s, "")
+            mensaje.Mensaje = err.Error()
             resp.Mensajes = append(resp.Mensajes, mensaje)
           } else {
-            if resp.EstadoGral != "PARCIAL" {
-              if resp.EstadoGral == "ERROR" {
-                resp.EstadoGral = "PARCIAL"
-              } else {
-                resp.EstadoGral = "OK"
+            objID := bson.NewObjectId()
+          	item.ID = objID
+
+            // Intento el alta
+            collection := session.DB(config.DB_Name).C(config.DB_Rol)
+            err = collection.Insert(item)
+            if err != nil {
+              if resp.EstadoGral != "PARCIAL" {
+                if resp.EstadoGral == "OK" {
+                  resp.EstadoGral = "PARCIAL"
+                } else {
+                  resp.EstadoGral = "ERROR"
+                }
               }
+              mensaje.Valor = item.Rol
+              mensaje.Estado = "ERROR"
+              s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+              mensaje.Mensaje = strings.Join(s, "")
+              resp.Mensajes = append(resp.Mensajes, mensaje)
+            } else {
+              if resp.EstadoGral != "PARCIAL" {
+                if resp.EstadoGral == "ERROR" {
+                  resp.EstadoGral = "PARCIAL"
+                } else {
+                  resp.EstadoGral = "OK"
+                }
+              }
+              mensaje.Valor = item.Rol
+              mensaje.Estado = "OK"
+              mensaje.Mensaje = "OK"
+              resp.Mensajes = append(resp.Mensajes, mensaje)
             }
-            mensaje.Valor = item.Rol
-            mensaje.Estado = "OK"
-            mensaje.Mensaje = "OK"
-            resp.Mensajes = append(resp.Mensajes, mensaje)
           }
         }
       }

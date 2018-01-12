@@ -18,7 +18,7 @@ func InicializarRutas() {
 	router.HandleFunc("/test", handlers.ValidarMiddleware(handlers.TestEndpoint)).Methods("GET")
 
 	// Usuario
-	router.HandleFunc("/registrar", handlers.UsuarioRegistrar).Methods("POST")
+	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioRegistrar)).Methods("POST")
 
 	// ClienteAPI
 	router.HandleFunc("/clienteAPI/alta", handlers.ClienteAPIAlta).Methods("POST")
