@@ -7,6 +7,7 @@ import (
   "fmt"
   "strings"
   "strconv"
+  "log"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -166,57 +167,64 @@ func UsuarioExiste(usuarioExiste string) (error) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-/**
-func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
-	start := time.Now()
-	var usuarioRegistrar models.UsuarioRegistrar
-
-  decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&usuarioRegistrar)
+func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
+  // Genero una nueva sesión Mongo
+  session, err, _ := core.GetMongoSession()
   if err != nil {
-    core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: JSON decode erróneo"), http.StatusBadRequest)
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "", fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
   } else {
-    // campos obligatorios
-    if usuarioRegistrar.Usuario == "" || usuarioRegistrar.Clave == "" || usuarioRegistrar.Mail == "" {
-      core.RespErrorJSON(w, req, start, fmt.Errorf("INVALID_PARAMS: Usuario, clave y mail no pueden estar vacíos"), http.StatusBadRequest)
+    defer session.Close()
+    cUsuario := session.DB(config.DB_Name).C(config.DB_Usuario)
+
+    // Busco el usuario y verifico que esté activo
+    var usuario models.Usuario
+    cUsuario.Find(bson.M{"usuario": usuarioPermisos, "activo": true, "borrado": false}).One(&usuario)
+    if usuario.ID == "" {
+      s := []string{"INVALID_PARAMS: El usuario no existe o está inactivo"}
+      return "", fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
     } else {
-      // me fijo si no existe el usuario
-      err, httpStat := UsuarioExiste(usuarioRegistrar.Usuario)
-      if err != nil {
-        core.RespErrorJSON(w, req, start, err, httpStat)
-      } else {
-        // establezco los campos
-        var usuario models.Usuario
-      	objID := bson.NewObjectId()
-      	usuario.ID = objID
-        usuario.Usuario = usuarioRegistrar.Usuario
-        usuario.Clave = core.HashSha512(usuarioRegistrar.Clave)
-        usuario.Mail = usuarioRegistrar.Mail
+      // Obtengo los ID roles del usuario
+      rolesArr := []bson.ObjectId{}
+      for _, item := range usuario.Roles {
+        if item.ID != "" {
+          rolesArr = append(rolesArr, item.ID)
+        }
+      }
 
-        // Genero una nueva sesión Mongo
-        session, err, httpStat := core.GetMongoSession()
-        if err != nil {
-          core.RespErrorJSON(w, req, start, err, httpStat)
-        } else {
-          defer session.Close()
+      roles := make([]models.Rol, 0)
+      cRoles := session.DB(config.DB_Name).C(config.DB_Rol)
+      cRoles.Find(bson.M{"_id": bson.M{"$in": rolesArr}}).All(&roles)
 
-          // Intento el alta
-          collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-          err = collection.Insert(usuario)
-          if err != nil {
-            s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
-            core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError)
-          } else {
-            core.RespOkJSON(w, req, start, "Ok", http.StatusCreated)
+      // Obtengo los ID permisos de los roles
+      permisosArr := []bson.ObjectId{}
+      for _, itemRol := range roles {
+        for _, itemPermiso := range itemRol.Permisos {
+          if itemPermiso.ID != "" {
+            permisosArr = append(permisosArr, itemPermiso.ID)
           }
         }
       }
+
+      permisos := make([]models.Permiso, 0)
+      cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
+      cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
+
+      // Junto los permisos en un string
+      permisosStr := []string{}
+      permisosStr = append(permisosStr, "#")
+      for _, itemItem := range permisos {
+        if itemItem.Permiso != "" {
+          permisosStr = append(permisosStr, itemItem.Permiso)
+        }
+      }
+      permisosStr = append(permisosStr, "#")
+      permisosUsuario := strings.Join(permisosStr, "#")
+      return permisosUsuario, nil, http.StatusOK
     }
   }
-  return
 }
-**/
+
 func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
   var usuario models.Usuario
   // Genero una nueva sesión Mongo
@@ -226,12 +234,93 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
   } else {
     defer session.Close()
     collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-
-    collection.Find(bson.M{"usuario": usuarioLogin, "clave": core.HashSha512(claveLogin)}).One(&usuario)
+    collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16)}).One(&usuario)
     if usuario.ID == "" {
       return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusForbidden
     } else {
       return nil, http.StatusOK
+    }
+  }
+}
+
+func TestPermisos(w http.ResponseWriter, req *http.Request) {
+  start := time.Now()
+  var resp models.Resp
+  var mensaje models.Mensaje
+  usuarioPermisos := "patricio"
+  // Genero una nueva sesión Mongo
+  session, err, _ := core.GetMongoSession()
+  if err != nil {
+    resp.EstadoGral = "ERROR"
+    mensaje.Valor = "MongoSession"
+    mensaje.Estado = "ERROR"
+    mensaje.Mensaje = err.Error()
+    resp.Mensajes = append(resp.Mensajes, mensaje)
+    respuesta, error := json.Marshal(resp)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    return
+  } else {
+    defer session.Close()
+    cUsuario := session.DB(config.DB_Name).C(config.DB_Usuario)
+
+    // Busco el usuario y verifico que esté activo
+    var usuario models.Usuario
+    cUsuario.Find(bson.M{"usuario": usuarioPermisos, "activo": true, "borrado": false}).One(&usuario)
+    if usuario.ID == "" {
+      resp.EstadoGral = "ERROR"
+      mensaje.Valor = "Usuario inválido"
+      mensaje.Estado = "ERROR"
+      mensaje.Mensaje = "Usuario inválido"
+      resp.Mensajes = append(resp.Mensajes, mensaje)
+      respuesta, error := json.Marshal(resp)
+      core.FatalErr(error)
+      core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+      return
+    } else {
+      // Obtengo los ID roles del usuario
+      rolesArr := []bson.ObjectId{}
+      for _, item := range usuario.Roles {
+        if item.ID != "" {
+          rolesArr = append(rolesArr, item.ID)
+        }
+      }
+
+      roles := make([]models.Rol, 0)
+      cRoles := session.DB(config.DB_Name).C(config.DB_Rol)
+      cRoles.Find(bson.M{"_id": bson.M{"$in": rolesArr}}).All(&roles)
+
+      // Obtengo los ID permisos de los roles
+      permisosArr := []bson.ObjectId{}
+      for _, itemRol := range roles {
+        for _, itemPermiso := range itemRol.Permisos {
+          if itemPermiso.ID != "" {
+            permisosArr = append(permisosArr, itemPermiso.ID)
+          }
+        }
+      }
+
+      permisos := make([]models.Permiso, 0)
+      cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
+      cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
+
+      // Junto los permisos en un string
+      permisosStr := []string{}
+      permisosStr = append(permisosStr, "#")
+      for _, itemItem := range permisos {
+        if itemItem.Permiso != "" {
+          permisosStr = append(permisosStr, itemItem.Permiso)
+        }
+      }
+      permisosStr = append(permisosStr, "#")
+      permisosUsuario := strings.Join(permisosStr, "#")
+      //return permisosUsuario, nil, http.StatusOK
+      log.Printf(permisosUsuario)
+
+      respuesta, error := json.Marshal(permisos)
+      core.FatalErr(error)
+      core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+      return
     }
   }
 }

@@ -64,15 +64,25 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
 func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
   var tokenAutorizado models.Token
 
+  permisos, err, httpStat := UsuarioPermisos(aut.Usr)
+  if err != nil {
+    return tokenAutorizado, err, httpStat
+	}
+
+  permisosEncriptados, err, httpStat := core.Encriptar(config.Aes, permisos)
+  if err != nil {
+    return tokenAutorizado, err, httpStat
+  }
+
   token := jwt.New(jwt.SigningMethodRS256)
   claims := make(jwt.MapClaims)
   claims["usr"] = aut.Usr
   claims["exp"] = time.Now().Add(time.Minute * config.ExpiraToken).Unix()
 	claims["iat"] = time.Now().Unix()
+  claims["rbc"] = permisosEncriptados
   token.Claims = claims
 
 	tokenString, err := token.SignedString(config.SignKey)
-
 	if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
     return tokenAutorizado, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
@@ -84,12 +94,12 @@ func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
 
 func ValidarMiddleware(next http.HandlerFunc) http.HandlerFunc {
   return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-    start := time.Now()
+  start := time.Now()
 
-    token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.TokenAutorizado{},
-  		func(token *jwt.Token) (interface{}, error) {
-  			return config.VerifyKey, nil
-  		})
+  token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.TokenAutorizado{},
+		func(token *jwt.Token) (interface{}, error) {
+			return config.VerifyKey, nil
+		})
 
   if err == nil {
     if token.Valid {

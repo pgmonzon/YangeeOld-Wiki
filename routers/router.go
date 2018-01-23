@@ -16,9 +16,11 @@ func InicializarRutas() {
 	router.HandleFunc("/autorizar", handlers.Autorizar).Methods("POST")
 	router.HandleFunc("/tokenCliente", handlers.TokenCliente).Methods("POST")
 	router.HandleFunc("/test", handlers.ValidarMiddleware(handlers.TestEndpoint)).Methods("GET")
+	router.HandleFunc("/testPermisos", handlers.TestPermisos).Methods("POST")
 
 	// Usuario
 	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioRegistrar)).Methods("POST")
+	//router.HandleFunc("/usuarioPermisos", handlers.ValidarMiddleware(handlers.UsuarioPermisos)).Methods("GET")
 
 	// ClienteAPI
 	router.HandleFunc("/clienteAPI/alta", handlers.ClienteAPIAlta).Methods("POST")

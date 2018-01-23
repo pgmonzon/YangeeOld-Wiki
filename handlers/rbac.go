@@ -134,7 +134,8 @@ func PermisoExiste(permisoExiste string) (error) {
   // Genero una nueva sesión Mongo
   session, err, _ := core.GetMongoSession()
   if err != nil {
-    return err
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return fmt.Errorf(strings.Join(s, ""))
   } else {
     defer session.Close()
     collection := session.DB(config.DB_Name).C(config.DB_Permiso)
