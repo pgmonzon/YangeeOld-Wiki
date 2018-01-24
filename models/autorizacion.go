@@ -16,5 +16,6 @@ type Token struct {
 
 type TokenAutorizado struct {
 	Usr string		`json:"usr"`
+	Rbc	string		`json:"rbc"`
 	*jwt.StandardClaims
 }
