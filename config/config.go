@@ -30,7 +30,7 @@ const(
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
-  Aes = "0123456789011313"
+  Aes = "AES256Key-32Characters1234567890"
 )
 
 var (

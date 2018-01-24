@@ -92,7 +92,7 @@ func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
   return tokenAutorizado, nil, http.StatusOK
 }
 
-func ValidarMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 
@@ -105,7 +105,26 @@ func ValidarMiddleware(next http.HandlerFunc) http.HandlerFunc {
     if token.Valid {
       claims := token.Claims.(*models.TokenAutorizado)
       if claims.ExpiresAt >= time.Now().Unix() {
-        // si no está expirado hago el next
+        // si no está expirado me fijo si tiene el permiso
+        if permiso == "" {
+          s := []string{"INVALID_PARAMS:", "El permiso no puede estar vacío"}
+          core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+        } else {
+          cadena := []string{"#", permiso, "#"}
+          permisoBuscar := strings.Join(cadena, "")
+          permisosDesencriptados, err, httpStat := core.Desencriptar(config.Aes, claims.Rbc)
+          if err != nil {
+            core.RespErrorJSON(w, req, start, err, httpStat)
+            return
+          }
+
+          if strings.Contains(permisosDesencriptados, permisoBuscar) == false {
+            s := []string{"FORBIDDEN:", "No tenés permiso para esta función"}
+            core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+            return
+          }
+        }
+
         //context.Set(req, "decoded", token.Claims)
         next(w, req)
       } else {
