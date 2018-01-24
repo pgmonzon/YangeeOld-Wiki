@@ -234,7 +234,7 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
   } else {
     defer session.Close()
     collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-    collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16)}).One(&usuario)
+    collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16), "activo": true, "borrado": false}).One(&usuario)
     if usuario.ID == "" {
       return fmt.Errorf("FORBIDDEN: usuario y clave incorrectos"), http.StatusForbidden
     } else {
