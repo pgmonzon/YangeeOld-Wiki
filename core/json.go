@@ -29,17 +29,17 @@ func RespuestaJSON(w http.ResponseWriter, req *http.Request, start time.Time, re
 
 func RespErrorJSON(w http.ResponseWriter, req *http.Request, start time.Time, err error, httpStat int) {
   var resp models.Respuesta
-  resp.Estado = "ERROR"
-  resp.Detalle = err.Error()
+  resp.EstadoGral = "ERROR"
+  resp.Mensaje = err.Error()
   respuesta, error := json.Marshal(resp)
   FatalErr(error)
   RespuestaJSON(w, req, start, respuesta, httpStat)
 }
 
-func RespOkJSON(w http.ResponseWriter, req *http.Request, start time.Time, detalle string, httpStat int) {
+func RespOkJSON(w http.ResponseWriter, req *http.Request, start time.Time, mensaje string, httpStat int) {
   var resp models.Respuesta
-  resp.Estado = "OK"
-  resp.Detalle = detalle
+  resp.EstadoGral = "OK"
+  resp.Mensaje = mensaje
   respuesta, error := json.Marshal(resp)
   FatalErr(error)
   RespuestaJSON(w, req, start, respuesta, httpStat)

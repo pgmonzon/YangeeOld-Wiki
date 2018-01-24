@@ -78,7 +78,7 @@ func ClienteAPIExiste(clienteAPIExiste string) (error, int) {
     index := mgo.Index{
       Key:        []string{"clienteapi"},
       Unique:     true,
-      DropDups:   true,
+      DropDups:   false,
       Background: true,
       Sparse:     true,
     }
@@ -93,25 +93,6 @@ func ClienteAPIExiste(clienteAPIExiste string) (error, int) {
       return nil, http.StatusOK
     } else {
       return fmt.Errorf("INVALID_PARAMS: El cliente API ya existe"), http.StatusBadRequest
-    }
-  }
-}
-
-func ClienteAPITraerFirma(clienteAPIHeader string) (string, error, int) {
-  var clienteAPI models.ClienteAPI
-  // Genero una nueva sesión Mongo
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    return "", err, httpStat
-  } else {
-    defer session.Close()
-
-    collection := session.DB(config.DB_Name).C(config.DB_ClienteAPI)
-    collection.Find(bson.M{"clienteapi": clienteAPIHeader}).One(&clienteAPI)
-    if clienteAPI.Firma == "" {
-      return "", fmt.Errorf("INVALID_PARAMS: El cliente API no tiene firma"), http.StatusBadRequest
-    } else {
-      return clienteAPI.Firma, nil, http.StatusOK
     }
   }
 }
