@@ -13,7 +13,7 @@ func InicializarRutas() {
   router := mux.NewRouter()
 
 	// *** AUT *** ### Módulo de Autorización #############
-  // AUT - Autorización: Genera token para operar
+  // AUT - Autorización: Genera el token para operar
 	router.HandleFunc("/autorizar", handlers.Autorizar).Methods("POST")
 	// AUT - tokenCliente: Es el token que debe generar el cliente, es a los efectos de ejemplo
 	router.HandleFunc("/tokenCliente", handlers.TokenCliente).Methods("POST")
@@ -30,7 +30,6 @@ func InicializarRutas() {
 	router.HandleFunc("/rol", handlers.ValidarMiddleware(handlers.RolAgregar, "RolAgregar")).Methods("POST")
 
 	// Revisar para sacar
-	router.HandleFunc("/test", handlers.ValidarMiddleware(handlers.TestEndpoint, "TestEndPoint")).Methods("GET")
 	router.HandleFunc("/testPermisos", handlers.TestPermisos).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":3113", router))

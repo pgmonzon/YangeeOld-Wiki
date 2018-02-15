@@ -4,7 +4,6 @@ import (
   "net/http"
   "encoding/json"
   "time"
-  "fmt"
   "strings"
 
   "github.com/pgmonzon/Yangee/core"
@@ -124,6 +123,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
           return
         } else {
           core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+          return
         }
       }
     }
