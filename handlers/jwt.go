@@ -5,6 +5,7 @@ import (
   "strings"
   "fmt"
   "net/http"
+  "encoding/json"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/config"
@@ -84,8 +85,8 @@ func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
 
 	tokenString, err := token.SignedString(config.SignKey)
 	if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
-    return tokenAutorizado, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return tokenAutorizado, fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
 	}
 
   tokenAutorizado.Token = tokenString
@@ -95,6 +96,8 @@ func GenerarToken(aut models.AutorizarTokenCliente) (models.Token, error, int) {
 func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
+  var resp models.Resp
+  var mensaje models.Mensaje
 
   token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.TokenAutorizado{},
 		func(token *jwt.Token) (interface{}, error) {
@@ -107,20 +110,43 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
       if claims.ExpiresAt >= time.Now().Unix() {
         // si no está expirado me fijo si tiene el permiso
         if permiso == "" {
-          s := []string{"INVALID_PARAMS:", "El permiso no puede estar vacío"}
-          core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+          resp.EstadoGral = "ERROR"
+          mensaje.Valor = "Permiso a validar"
+          mensaje.Estado = "ERROR"
+          s := []string{"INVALID_PARAMS: ", "No tiene permiso a validar"}
+          mensaje.Mensaje = strings.Join(s, "")
+          resp.Mensajes = append(resp.Mensajes, mensaje)
+          respuesta, error := json.Marshal(resp)
+          core.FatalErr(error)
+          core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+          return
         } else {
           cadena := []string{"#", permiso, "#"}
           permisoBuscar := strings.Join(cadena, "")
           permisosDesencriptados, err, httpStat := core.Desencriptar(config.Aes, claims.Rbc)
           if err != nil {
-            core.RespErrorJSON(w, req, start, err, httpStat)
+            resp.EstadoGral = "ERROR"
+            mensaje.Valor = "Desencriptar"
+            mensaje.Estado = "ERROR"
+            s := []string{err.Error()}
+            mensaje.Mensaje = strings.Join(s, "")
+            resp.Mensajes = append(resp.Mensajes, mensaje)
+            respuesta, error := json.Marshal(resp)
+            core.FatalErr(error)
+            core.RespuestaJSON(w, req, start, respuesta, httpStat)
             return
           }
 
           if strings.Contains(permisosDesencriptados, permisoBuscar) == false {
-            s := []string{"FORBIDDEN:", "No tenés permiso para esta función"}
-            core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+            resp.EstadoGral = "ERROR"
+            mensaje.Valor = "Permiso denegado"
+            mensaje.Estado = "ERROR"
+            s := []string{"FORBIDDEN: ", "No tenés permiso"}
+            mensaje.Mensaje = strings.Join(s, "")
+            resp.Mensajes = append(resp.Mensajes, mensaje)
+            respuesta, error := json.Marshal(resp)
+            core.FatalErr(error)
+            core.RespuestaJSON(w, req, start, respuesta, http.StatusForbidden)
             return
           }
         }
@@ -128,23 +154,40 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
         //context.Set(req, "decoded", token.Claims)
         next(w, req)
       } else {
-        s := []string{"INVALID_PARAMS:", "Token expirado"}
-        core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+        resp.EstadoGral = "ERROR"
+        mensaje.Valor = "Token Expirado"
+        mensaje.Estado = "ERROR"
+        s := []string{"FORBIDDEN: ", "Token Expirado"}
+        mensaje.Mensaje = strings.Join(s, "")
+        resp.Mensajes = append(resp.Mensajes, mensaje)
+        respuesta, error := json.Marshal(resp)
+        core.FatalErr(error)
+        core.RespuestaJSON(w, req, start, respuesta, http.StatusForbidden)
+        return
       }
     } else {
-      s := []string{"INVALID_PARAMS:", err.Error()}
-      core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+      resp.EstadoGral = "ERROR"
+      mensaje.Valor = "Token Inválido"
+      mensaje.Estado = "ERROR"
+      s := []string{"FORBIDDEN: ", "Token Inválido"}
+      mensaje.Mensaje = strings.Join(s, "")
+      resp.Mensajes = append(resp.Mensajes, mensaje)
+      respuesta, error := json.Marshal(resp)
+      core.FatalErr(error)
+      core.RespuestaJSON(w, req, start, respuesta, http.StatusForbidden)
+      return
     }
   } else {
-    s := []string{"INVALID_PARAMS:", err.Error()}
-    core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest)
+    resp.EstadoGral = "ERROR"
+    mensaje.Valor = "ParseFromRequestWithClaims"
+    mensaje.Estado = "ERROR"
+    s := []string{"INVALID_PARAMS: ", err.Error()}
+    mensaje.Mensaje = strings.Join(s, "")
+    resp.Mensajes = append(resp.Mensajes, mensaje)
+    respuesta, error := json.Marshal(resp)
+    core.FatalErr(error)
+    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    return
   }
   })
-}
-
-func TestEndpoint(w http.ResponseWriter, req *http.Request) {
-  start := time.Now()
-
-  s := []string{"OK:", "Test Endpoint"}
-  core.RespErrorJSON(w, req, start, fmt.Errorf(strings.Join(s, " ")), http.StatusOK)
 }

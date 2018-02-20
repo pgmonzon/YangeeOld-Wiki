@@ -102,8 +102,8 @@ func ClienteAPITraer(cteAPI string) (models.ClienteAPI, error, int) {
   // Genero una nueva sesión Mongo
   session, err, httpStat := core.GetMongoSession()
   if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
-    return clienteAPI, fmt.Errorf(strings.Join(s, " ")), httpStat
+    s := []string{err.Error()}
+    return clienteAPI, fmt.Errorf(strings.Join(s, "")), httpStat
   } else {
     defer session.Close()
 

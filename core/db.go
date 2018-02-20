@@ -27,8 +27,8 @@ func GetMongoSession() (*mgo.Session, error, int) {
 
     mgoSession, err = mgo.DialWithInfo(mongoDBDialInfo)
     if err != nil {
-      s := []string{"INTERNAL_SERVER_ERROR:", err.Error()}
-      return nil, fmt.Errorf(strings.Join(s, " ")), http.StatusInternalServerError
+      s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+      return nil, fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
     }
     mgoSession.SetMode(mgo.Monotonic, true)
   }
