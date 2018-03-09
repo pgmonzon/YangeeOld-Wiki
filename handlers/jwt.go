@@ -6,6 +6,7 @@ import (
   "fmt"
   "net/http"
   "encoding/json"
+  //"context"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/config"
@@ -14,6 +15,7 @@ import (
   "github.com/dgrijalva/jwt-go"
   "github.com/dgrijalva/jwt-go/request"
   "github.com/mitchellh/mapstructure"
+  "github.com/gorilla/context"
 )
 
 // Valida el token generado por el cliente API
@@ -98,6 +100,9 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   start := time.Now()
   var resp models.Resp
   var mensaje models.Mensaje
+
+  context.Set(req, "Audit", "1331")
+  //context.WithValue(req.Context(), "Audit", "1234567890123")
 
   // Si es NO_VALIDAR redirecciono directamente
   if permiso == "NO_VALIDAR" {

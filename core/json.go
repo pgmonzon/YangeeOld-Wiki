@@ -7,6 +7,8 @@ import (
   "encoding/json"
 
   "github.com/pgmonzon/Yangee/models"
+
+  "github.com/gorilla/context"
 )
 
 func RespuestaJSON(w http.ResponseWriter, req *http.Request, start time.Time, respuesta []byte, code int) {
@@ -15,7 +17,8 @@ func RespuestaJSON(w http.ResponseWriter, req *http.Request, start time.Time, re
   if string(respuesta) != "" {
 		w.Write(respuesta)
 	}
-
+  log.Printf(context.Get(req, "Audit").(string))
+  //log.Printf(req.Context().Value("Audit"))
   log.Printf("%s\t%s\t%s\t%s\t%d\t%d\t%s",
 		req.RemoteAddr,
 		req.Method,
