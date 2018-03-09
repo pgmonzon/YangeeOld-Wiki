@@ -99,6 +99,12 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   var resp models.Resp
   var mensaje models.Mensaje
 
+  // Si es NO_VALIDAR redirecciono directamente
+  if permiso == "NO_VALIDAR" {
+    next(w, req)
+    return
+  }
+
   token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.TokenAutorizado{},
 		func(token *jwt.Token) (interface{}, error) {
 			return config.VerifyKey, nil
@@ -153,6 +159,7 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
 
         //context.Set(req, "decoded", token.Claims)
         next(w, req)
+        return
       } else {
         resp.EstadoGral = "ERROR"
         mensaje.Valor = "Token Expirado"
