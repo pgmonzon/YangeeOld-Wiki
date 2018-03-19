@@ -6,7 +6,8 @@ import (
   "fmt"
   "net/http"
   "encoding/json"
-  //"context"
+  "io/ioutil"
+  "log"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/config"
@@ -16,6 +17,7 @@ import (
   "github.com/dgrijalva/jwt-go/request"
   "github.com/mitchellh/mapstructure"
   "github.com/gorilla/context"
+  "gopkg.in/mgo.v2/bson"
 )
 
 // Valida el token generado por el cliente API
@@ -28,6 +30,9 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
   if err != nil {
     return aut, err, httpStat
   }
+  log.Printf(clienteAPI.ClienteAPI)
+  context.Set(req, "ClienteAPI_id", clienteAPI.ID)
+  context.Set(req, "ClienteAPI", clienteAPI.ClienteAPI)
 
   token, err := request.ParseFromRequestWithClaims(req, request.AuthorizationHeaderExtractor, &models.AutorizarTokenCliente{},
 		func(token *jwt.Token) (interface{}, error) {
@@ -43,7 +48,7 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
         if err != nil {
           return aut, err, httpStat
         }
-        err, httpStat = UsuarioLogin(claims.Usr, claveDesencriptada)
+        err, httpStat = UsuarioLogin(claims.Usr, claveDesencriptada, req)
         if err != nil {
           return aut, err, httpStat
         } else {
@@ -101,8 +106,12 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   var resp models.Resp
   var mensaje models.Mensaje
 
-  context.Set(req, "Audit", "1331")
-  //context.WithValue(req.Context(), "Audit", "1234567890123")
+  objID := bson.NewObjectId()
+  context.Set(req, "CicloDeVida_id", objID)
+  context.Set(req, "Start", start)
+  bodyBytes, _ := ioutil.ReadAll(req.Body)
+  bodyString := string(bodyBytes)
+  context.Set(req, "Body", bodyString)
 
   // Si es NO_VALIDAR redirecciono directamente
   if permiso == "NO_VALIDAR" {
@@ -161,8 +170,6 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
             return
           }
         }
-
-        //context.Set(req, "decoded", token.Claims)
         next(w, req)
         return
       } else {

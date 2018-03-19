@@ -20,6 +20,7 @@ const(
   DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transaction"
 
+  DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Usuario = "usuario" // tabla de usuarios
   DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
   DB_Permiso = "permiso" // tabla de permisos

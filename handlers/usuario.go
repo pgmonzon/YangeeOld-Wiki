@@ -15,6 +15,7 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
+  "github.com/gorilla/context"
 )
 
 func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
@@ -225,7 +226,7 @@ func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
   }
 }
 
-func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
+func UsuarioLogin(usuarioLogin string, claveLogin string, req *http.Request) (error, int) {
   var usuario models.Usuario
   // Genero una nueva sesión Mongo
   session, err, httpStat := core.GetMongoSession()
@@ -239,6 +240,8 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (error, int) {
       s := []string{"FORBIDDEN: ", "Usuario y clave incorrectos"}
       return fmt.Errorf(strings.Join(s, "")), http.StatusForbidden
     } else {
+      context.Set(req, "Usuario_id", usuario.ID)
+      context.Set(req, "Usuario", usuario.Usuario)
       return nil, http.StatusOK
     }
   }
