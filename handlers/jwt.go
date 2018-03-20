@@ -6,7 +6,6 @@ import (
   "fmt"
   "net/http"
   "encoding/json"
-  "io/ioutil"
   "log"
 
   "github.com/pgmonzon/Yangee/models"
@@ -109,9 +108,12 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   objID := bson.NewObjectId()
   context.Set(req, "CicloDeVida_id", objID)
   context.Set(req, "Start", start)
-  bodyBytes, _ := ioutil.ReadAll(req.Body)
-  bodyString := string(bodyBytes)
-  context.Set(req, "Body", bodyString)
+  context.Set(req, "Proceso", "el proceso")
+  context.Set(req, "Coleccion", "la colección")
+  context.Set(req, "Novedad", "la novedad")
+  //bodyBytes, _ := ioutil.ReadAll(req.Body)
+  //bodyString := string(bodyBytes)
+  //context.Set(req, "ReqBody", bodyString)
 
   // Si es NO_VALIDAR redirecciono directamente
   if permiso == "NO_VALIDAR" {

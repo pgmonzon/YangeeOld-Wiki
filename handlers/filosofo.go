@@ -13,6 +13,7 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
+  "github.com/gorilla/context"
 )
 
 func CrearFilosofo(w http.ResponseWriter, req *http.Request) {
@@ -84,6 +85,7 @@ func CrearFilosofo(w http.ResponseWriter, req *http.Request) {
           	item.ID = objID
 
             // Intento el alta
+            context.Set(req, "Coleccion", config.DB_Filosofo)
             collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
             err = collection.Insert(item)
             if err != nil {

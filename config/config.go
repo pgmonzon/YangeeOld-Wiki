@@ -33,6 +33,13 @@ const(
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
+
+  // Defectos de clienteAPI y Usuario
+  CliAPI_id = "5ab14ed7bbffc5336c1600cd"
+  CliAPI = "anónimo"
+  Usr_id = "5ab15229bbffc5336c1600d1"
+  Usr = "anónimo"
+  Obj_id = "5ab14ed7bbffc5336c1600cd"
 )
 
 var (

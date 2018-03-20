@@ -13,15 +13,15 @@ type CicloDeVida struct {
   Metodo        string          `json:"metodo"`
   RequestURI    string          `json:"requestURI"`
   Protocolo     string          `json:"protocolo"`
-  Body          string          `json:"body"`
-  //ClienteAPI_id bson.ObjectId   `bson:"_id" json:"clienteAPI_id,omitempty"`
-  //ClienteAPI    string          `json:"clienteAPI"`
-  //Usuario_id    bson.ObjectId   `bson:"_id" json:"usuario_id,omitempty"`
-  //Usuario       string          `json:"usuario"`
-/**
-  Codigo        string          `json:"codigo"`
-  Duracion      string          `json:"duracion"`
-  Colleccion    string          `json:"coleccion"`
-  Novedad       interface{}     `json:"novedad"`
-**/
+  Codigo        int             `json:"codigo"`
+  Duracion      time.Duration   `json:"duracion"`
+  //Body          interface{}     `json:"body"`
+  ClienteAPI_id bson.ObjectId   `bson:"clienteAPI_id" json:"clienteAPI_id,omitempty"`
+  ClienteAPI    string          `json:"clienteAPI"`
+  Usuario_id    bson.ObjectId   `bson:"usuario_id" json:"usuario_id,omitempty"`
+  Usuario       string          `json:"usuario"`
+  Proceso       string          `json:"proceso"`
+  Coleccion     string          `json:"coleccion"`
+  Objeto_id     bson.ObjectId   `bson:"objeto_id" json:"objeto_id,omitempty"`
+  Novedad       string          `json:"novedad"`
 }

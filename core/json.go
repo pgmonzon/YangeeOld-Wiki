@@ -20,7 +20,7 @@ func RespuestaJSON(w http.ResponseWriter, req *http.Request, start time.Time, re
 		w.Write(respuesta)
 	}
 
-  RegistrarCicloDeVida(req)
+  RegistrarCicloDeVida(req, code, start)
 
   log.Printf("%s\t%s\t%s\t%s\t%d\t%d\t%s",
 		req.RemoteAddr,
@@ -33,7 +33,7 @@ func RespuestaJSON(w http.ResponseWriter, req *http.Request, start time.Time, re
 	)
 }
 
-func RegistrarCicloDeVida(req *http.Request) {
+func RegistrarCicloDeVida(req *http.Request, code int, start time.Time) {
   session, err, _ := GetMongoSession()
   if err == nil {
     defer session.Close()
@@ -44,23 +44,33 @@ func RegistrarCicloDeVida(req *http.Request) {
     cicloVida.Metodo = req.Method
     cicloVida.RequestURI = req.RequestURI
     cicloVida.Protocolo = req.Proto
-    cicloVida.Body = context.Get(req, "Body").(string)
-    /**
+    cicloVida.Codigo = code
+    cicloVida.Duracion = time.Since(start)
+    //bodyBytes, _ := ioutil.ReadAll(req.Body)
+    //bodyString := string(bodyBytes)
+    //cicloVida.Body = bodyString
     if context.Get(req, "ClienteAPI_id") == nil {
-      cicloVida.ClienteAPI_id = ""
-      cicloVida.ClienteAPI = ""
+      cicloVida.ClienteAPI_id = bson.ObjectIdHex(config.CliAPI_id)
+      cicloVida.ClienteAPI = config.CliAPI
     } else {
       cicloVida.ClienteAPI_id = context.Get(req, "ClienteAPI_id").(bson.ObjectId)
       cicloVida.ClienteAPI = context.Get(req, "ClienteAPI").(string)
     }
     if context.Get(req, "Usuario_id") == nil {
-      cicloVida.Usuario_id = ""
-      cicloVida.Usuario = ""
+      cicloVida.Usuario_id = bson.ObjectIdHex(config.Usr_id)
+      cicloVida.Usuario = config.Usr
     } else {
       cicloVida.Usuario_id = context.Get(req, "Usuario_id").(bson.ObjectId)
       cicloVida.Usuario = context.Get(req, "Usuario").(string)
     }
-    **/
+    cicloVida.Proceso = context.Get(req, "Proceso").(string)
+    cicloVida.Coleccion = context.Get(req, "Coleccion").(string)
+    if context.Get(req, "Objeto_id") == nil {
+      cicloVida.Objeto_id = bson.ObjectIdHex(config.Obj_id)
+    } else {
+      cicloVida.ClienteAPI_id = context.Get(req, "Objeto_id").(bson.ObjectId)
+    }
+    cicloVida.Novedad = context.Get(req, "Novedad").(string)
 
     collection := session.DB(config.DB_Name).C(config.DB_CicloVida)
     err :=collection.Insert(cicloVida)
