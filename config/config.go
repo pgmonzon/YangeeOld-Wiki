@@ -21,11 +21,11 @@ const(
   DB_Transaction = "transaction"
 
   DB_CicloVida = "cicloVida" // ciclo de vida
-  DB_Usuario = "usuario" // tabla de usuarios
-  DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
-  DB_Permiso = "permiso" // tabla de permisos
-  DB_Rol = "rol" // tabla de roles
-  DB_Filosofo = "filosofo"
+  DB_Usuario = "usuarios" // tabla de usuarios
+  DB_ClienteAPI = "clientesApi" // tabla de los clientes de la API
+  DB_Permiso = "permisos" // tabla de permisos
+  DB_Rol = "roles" // tabla de roles
+  DB_Filosofo = "filosofos"
 
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
@@ -33,13 +33,6 @@ const(
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
-
-  // Defectos de clienteAPI y Usuario
-  CliAPI_id = "5ab14ed7bbffc5336c1600cd"
-  CliAPI = "anónimo"
-  Usr_id = "5ab15229bbffc5336c1600d1"
-  Usr = "anónimo"
-  Obj_id = "5ab14ed7bbffc5336c1600cd"
 )
 
 var (

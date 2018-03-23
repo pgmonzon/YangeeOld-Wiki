@@ -1,23 +1,19 @@
 package handlers
 
 import (
-  "time"
-  "encoding/json"
   "net/http"
   "fmt"
   "strings"
   "strconv"
-  "log"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
   "github.com/pgmonzon/Yangee/config"
 
-  "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
   "github.com/gorilla/context"
 )
-
+/**
 func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 	var Usuarios models.Usuarios
@@ -167,86 +163,103 @@ func UsuarioExiste(usuarioExiste string) (error) {
     }
   }
 }
-
+**/
 func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
+
   // Genero una nueva sesión Mongo
+  // *****************************
   session, err, _ := core.GetMongoSession()
   if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
     return "", fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
-  } else {
-    defer session.Close()
-    cUsuario := session.DB(config.DB_Name).C(config.DB_Usuario)
+  }
 
-    // Busco el usuario y verifico que esté activo
-    var usuario models.Usuario
-    cUsuario.Find(bson.M{"usuario": usuarioPermisos, "activo": true, "borrado": false}).One(&usuario)
-    if usuario.ID == "" {
-      s := []string{"INVALID_PARAMS: El usuario no existe o está inactivo"}
-      return "", fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
-    } else {
-      // Obtengo los ID roles del usuario
-      rolesArr := []bson.ObjectId{}
-      for _, item := range usuario.Roles {
-        if item.ID != "" {
-          rolesArr = append(rolesArr, item.ID)
-        }
-      }
+  // Busco el usuario y verifico que esté activo
+  // *******************************************
+  defer session.Close()
+  cUsuario := session.DB(config.DB_Name).C(config.DB_Usuario)
+  var usuario models.Usuario
+  cUsuario.Find(bson.M{"usuario": usuarioPermisos, "activo": true, "borrado": false}).One(&usuario)
+  if usuario.ID == "" {
+    s := []string{"INVALID_PARAMS: El usuario no existe o está inactivo"}
+    return "", fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
+  }
 
-      roles := make([]models.Rol, 0)
-      cRoles := session.DB(config.DB_Name).C(config.DB_Rol)
-      cRoles.Find(bson.M{"_id": bson.M{"$in": rolesArr}}).All(&roles)
-
-      // Obtengo los ID permisos de los roles
-      permisosArr := []bson.ObjectId{}
-      for _, itemRol := range roles {
-        for _, itemPermiso := range itemRol.Permisos {
-          if itemPermiso.ID != "" {
-            permisosArr = append(permisosArr, itemPermiso.ID)
-          }
-        }
-      }
-
-      permisos := make([]models.Permiso, 0)
-      cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
-      cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
-
-      // Junto los permisos en un string
-      permisosStr := []string{}
-      permisosStr = append(permisosStr, "#")
-      for _, itemItem := range permisos {
-        if itemItem.Permiso != "" {
-          permisosStr = append(permisosStr, itemItem.Permiso)
-        }
-      }
-      permisosStr = append(permisosStr, "#")
-      permisosUsuario := strings.Join(permisosStr, "#")
-      return permisosUsuario, nil, http.StatusOK
+  // Obtengo los ID roles del usuario
+  // ********************************
+  rolesArr := []bson.ObjectId{}
+  for _, item := range usuario.Roles {
+    if item.ID != "" {
+      rolesArr = append(rolesArr, item.ID)
     }
   }
+  roles := make([]models.Rol, 0)
+  cRoles := session.DB(config.DB_Name).C(config.DB_Rol)
+  cRoles.Find(bson.M{"_id": bson.M{"$in": rolesArr}}).All(&roles)
+
+  // Obtengo los ID permisos de los roles
+  // ************************************
+  permisosArr := []bson.ObjectId{}
+  for _, itemRol := range roles {
+    for _, itemPermiso := range itemRol.Permisos {
+      if itemPermiso.ID != "" {
+        permisosArr = append(permisosArr, itemPermiso.ID)
+      }
+    }
+  }
+  permisos := make([]models.Permiso, 0)
+  cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
+  cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
+
+  // Junto los permisos en un string
+  // *******************************
+  permisosStr := []string{}
+  permisosStr = append(permisosStr, "#")
+  for _, itemItem := range permisos {
+    if itemItem.Permiso != "" {
+      permisosStr = append(permisosStr, itemItem.Permiso)
+    }
+  }
+  permisosStr = append(permisosStr, "#")
+  permisosUsuario := strings.Join(permisosStr, "#")
+
+  // Está todo Ok
+  // ************
+  return permisosUsuario, nil, http.StatusOK
 }
 
 func UsuarioLogin(usuarioLogin string, claveLogin string, req *http.Request) (error, int) {
   var usuario models.Usuario
+
   // Genero una nueva sesión Mongo
+  // *****************************
   session, err, httpStat := core.GetMongoSession()
   if err != nil {
     return err, httpStat
-  } else {
-    defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-    collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16), "activo": true, "borrado": false}).One(&usuario)
-    if usuario.ID == "" {
-      s := []string{"FORBIDDEN: ", "Usuario y clave incorrectos"}
-      return fmt.Errorf(strings.Join(s, "")), http.StatusForbidden
-    } else {
-      context.Set(req, "Usuario_id", usuario.ID)
-      context.Set(req, "Usuario", usuario.Usuario)
-      return nil, http.StatusOK
-    }
   }
+
+  // Intento el login
+  // ****************
+  defer session.Close()
+  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+  collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16), "activo": true, "borrado": false}).One(&usuario)
+  // Si no loguea
+  if usuario.ID == "" {
+    s := []string{"FORBIDDEN: ", "Usuario y clave incorrectos"}
+    return fmt.Errorf(strings.Join(s, "")), http.StatusForbidden
+  }
+
+  // Establezco las variables
+  // ************************
+  context.Set(req, "Usuario_id", usuario.ID)
+  context.Set(req, "Usuario", usuario.Usuario)
+
+  // Está todo Ok
+  // ************
+  return nil, http.StatusOK
 }
 
+/**
 func TestPermisos(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
   var resp models.Resp
@@ -328,3 +341,4 @@ func TestPermisos(w http.ResponseWriter, req *http.Request) {
     }
   }
 }
+**/

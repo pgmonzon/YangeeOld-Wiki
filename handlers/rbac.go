@@ -1,6 +1,7 @@
 package handlers
 
 import (
+/**
   "time"
   "encoding/json"
   "net/http"
@@ -13,8 +14,9 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
+**/
 )
-
+/**
 func PermisoAgregar(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	var Permisos models.Permisos
@@ -311,3 +313,4 @@ func RolExiste(rolExiste string) (error) {
     }
   }
 }
+**/

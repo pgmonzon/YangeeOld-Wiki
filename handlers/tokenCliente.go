@@ -1,6 +1,7 @@
 package handlers
 
 import (
+/**
   "net/http"
   "encoding/json"
   "time"
@@ -10,37 +11,33 @@ import (
   "github.com/pgmonzon/Yangee/models"
 
   "github.com/dgrijalva/jwt-go"
+**/
 )
-
+/**
 // Es el token que debe generar el cliente, es a los efectos de ejemplo
 func TokenCliente(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
   var reqCliente models.ReqCliente
-  var resp models.Resp
-  var mensaje models.Mensaje
+  var rsp models.Respuesta
 
   decoder := json.NewDecoder(req.Body)
   err := decoder.Decode(&reqCliente)
   if err != nil {
-    resp.EstadoGral = "ERROR"
-    mensaje.Valor = "JSON decode"
-    mensaje.Estado = "ERROR"
+    rsp.Estado = "ERROR"
+    rsp.Valor = "JSON decode"
     s := []string{"INVALID_PARAMS: ", err.Error()}
-    mensaje.Mensaje = strings.Join(s, "")
-    resp.Mensajes = append(resp.Mensajes, mensaje)
-    respuesta, error := json.Marshal(resp)
+    rsp.Mensaje = strings.Join(s, "")
+    respuesta, error := json.Marshal(rsp)
     core.FatalErr(error)
     core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
     return
   } else {
     if reqCliente.Usuario == "" || reqCliente.Clave == "" || reqCliente.Audience == "" {
-      resp.EstadoGral = "ERROR"
-      mensaje.Valor = "Campos obligatorios en vacío"
-      mensaje.Estado = "ERROR"
+      rsp.Estado = "ERROR"
+      rsp.Valor = "Campos obligatorios en vacío"
       s := []string{"INVALID_PARAMS: ", "Usuario, clave y audience no pueden estar vacíos"}
-      mensaje.Mensaje = strings.Join(s, "")
-      resp.Mensajes = append(resp.Mensajes, mensaje)
-      respuesta, error := json.Marshal(resp)
+      rsp.Mensaje = strings.Join(s, "")
+      respuesta, error := json.Marshal(rsp)
       core.FatalErr(error)
       core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
       return
@@ -49,26 +46,22 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
 
       clienteAPI, err, httpStat := ClienteAPITraer(reqCliente.Audience)
       if err != nil {
-        resp.EstadoGral = "ERROR"
-        mensaje.Valor = "ClienteAPITraer"
-        mensaje.Estado = "ERROR"
+        rsp.Estado = "ERROR"
+        rsp.Valor = "ClienteAPITraer"
         s := []string{err.Error()}
-        mensaje.Mensaje = strings.Join(s, "")
-        resp.Mensajes = append(resp.Mensajes, mensaje)
-        respuesta, error := json.Marshal(resp)
+        rsp.Mensaje = strings.Join(s, "")
+        respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
         core.RespuestaJSON(w, req, start, respuesta, httpStat)
         return
       }
 
       if clienteAPI.ClienteAPI == "" {
-        resp.EstadoGral = "ERROR"
-        mensaje.Valor = "ClienteAPI"
-        mensaje.Estado = "ERROR"
+        rsp.Estado = "ERROR"
+        rsp.Valor = "ClienteAPI"
         s := []string{"INVALID_PARAMS: ", "ClienteAPI inexistente"}
-        mensaje.Mensaje = strings.Join(s, "")
-        resp.Mensajes = append(resp.Mensajes, mensaje)
-        respuesta, error := json.Marshal(resp)
+        rsp.Mensaje = strings.Join(s, "")
+        respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
         core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
         return
@@ -76,13 +69,11 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
 
       claveEncriptada, err, httpStat := core.Encriptar(clienteAPI.Aes, reqCliente.Clave)
       if err != nil {
-        resp.EstadoGral = "ERROR"
-        mensaje.Valor = "Encriptar"
-        mensaje.Estado = "ERROR"
+        rsp.Estado = "ERROR"
+        rsp.Valor = "Encriptar"
         s := []string{err.Error()}
-        mensaje.Mensaje = strings.Join(s, "")
-        resp.Mensajes = append(resp.Mensajes, mensaje)
-        respuesta, error := json.Marshal(resp)
+        rsp.Mensaje = strings.Join(s, "")
+        respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
         core.RespuestaJSON(w, req, start, respuesta, httpStat)
         return
@@ -96,13 +87,11 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
 
       tokenString, err := token.SignedString([]byte(clienteAPI.Firma))
       if err != nil {
-        resp.EstadoGral = "ERROR"
-        mensaje.Valor = "SignedString"
-        mensaje.Estado = "ERROR"
+        rsp.Estado = "ERROR"
+        rsp.Valor = "SignedString"
         s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-        mensaje.Mensaje = strings.Join(s, "")
-        resp.Mensajes = append(resp.Mensajes, mensaje)
-        respuesta, error := json.Marshal(resp)
+        rsp.Mensaje = strings.Join(s, "")
+        respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
         core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
         return
@@ -111,13 +100,11 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
         tokenCliente.Token = tokenString
         respuesta, err := json.Marshal(tokenCliente)
         if err != nil {
-          resp.EstadoGral = "ERROR"
-          mensaje.Valor = "Marshal"
-          mensaje.Estado = "ERROR"
+          rsp.Estado = "ERROR"
+          rsp.Valor = "Marshal"
           s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-          mensaje.Mensaje = strings.Join(s, "")
-          resp.Mensajes = append(resp.Mensajes, mensaje)
-          respuesta, error := json.Marshal(resp)
+          rsp.Mensaje = strings.Join(s, "")
+          respuesta, error := json.Marshal(rsp)
           core.FatalErr(error)
           core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
           return
@@ -129,3 +116,4 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
     }
   }
 }
+**/

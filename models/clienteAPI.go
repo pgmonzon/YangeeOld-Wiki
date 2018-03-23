@@ -5,14 +5,10 @@ import (
 )
 
 type ClienteAPI struct {
-  ID          bson.ObjectId 	`bson:"_id" json:"id"`
-	ClienteAPI 	string		      `json:"clienteapi"`
-	Firma 		  string		      `json:"firma"`
-  Aes         string          `json:"aes"`
-}
-
-type ClienteAPIAlta struct {
-	ClienteAPI 	string		      `json:"clienteapi"`
-	Firma 		  string		      `json:"firma"`
-  Aes         string          `json:"aes"`
+  ID          bson.ObjectId `bson:"_id" json:"id,omitempty"`
+	ClienteAPI 	string		    `json:"clienteapi"`
+	Firma 		  string		    `json:"firma"`
+  Aes         string        `json:"aes"`
+  Activo		  bool   				`json:"activo"`
+  Borrado     bool         	`json:"borrado"`
 }
