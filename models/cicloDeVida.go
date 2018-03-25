@@ -15,7 +15,6 @@ type CicloDeVida struct {
   Protocolo     string          `json:"protocolo"`
   Codigo        int             `json:"codigo"`
   Duracion      time.Duration   `json:"duracion"`
-  //Body          interface{}     `json:"body"`
   ClienteAPI_id bson.ObjectId   `bson:"clienteAPI_id" json:"clienteAPI_id,omitempty"`
   ClienteAPI    string          `json:"clienteAPI"`
   Usuario_id    bson.ObjectId   `bson:"usuario_id" json:"usuario_id,omitempty"`

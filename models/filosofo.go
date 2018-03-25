@@ -10,7 +10,7 @@ type Filosofo struct {
 	Doctrina	string					`json:"doctrina"`
 	Biografia	string					`json:"biografia"`
 	Activo		bool   					`json:"activo"`
-  Borrado   bool          	`json:"borrado"`
+  Borrado   bool          	`json:"borrado,omitempty"`
 }
 
 type Filosofos struct {
