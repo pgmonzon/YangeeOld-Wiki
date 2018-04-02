@@ -33,6 +33,9 @@ const(
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
+
+  // Timestamp layout
+  TimestampLayout = "2006-01-02T15:04:05.000Z"
 )
 
 var (

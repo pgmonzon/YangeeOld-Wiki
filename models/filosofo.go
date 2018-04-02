@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -11,8 +13,5 @@ type Filosofo struct {
 	Biografia	string					`json:"biografia"`
 	Activo		bool   					`json:"activo"`
   Borrado   bool          	`json:"borrado,omitempty"`
-}
-
-type Filosofos struct {
-	Filosofos	[]Filosofo			`json:"filosofos"`
+	Timestamp	time.Time				`json:"timestamp, omitempty"`
 }
