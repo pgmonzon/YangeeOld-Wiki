@@ -10,12 +10,12 @@ import (
 )
 
 func main() {
-  appengine.Main()
-  
   fmt.Println(" ***********************")
   fmt.Println(" ¡¡¡ Wooow is Yangee !!!")
   fmt.Println(" ***********************")
 
   config.Inicializar()
   routers.InicializarRutas()
+
+  appengine.Main()
 }
