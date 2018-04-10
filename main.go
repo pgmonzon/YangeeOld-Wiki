@@ -5,8 +5,6 @@ import (
 
   "github.com/pgmonzon/Yangee/routers"
   "github.com/pgmonzon/Yangee/config"
-
-  "google.golang.org/appengine"
 )
 
 func main() {
@@ -16,6 +14,4 @@ func main() {
 
   config.Inicializar()
   routers.InicializarRutas()
-
-  appengine.Main()
 }
