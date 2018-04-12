@@ -18,7 +18,6 @@ import (
   "github.com/gorilla/mux"
 )
 
-
 func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
 	var filosofo models.Filosofo
 

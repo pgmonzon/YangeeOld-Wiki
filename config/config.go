@@ -21,6 +21,7 @@ const(
   DB_Transaction = "transaction"
 
   DB_CicloVida = "cicloVida" // ciclo de vida
+  DB_Empresa = "empresas" // empresa del usuario
   DB_Usuario = "usuarios" // tabla de usuarios
   DB_ClienteAPI = "clientesApi" // tabla de los clientes de la API
   DB_Permiso = "permisos" // tabla de permisos

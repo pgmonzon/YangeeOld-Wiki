@@ -21,5 +21,13 @@ type TokenAutorizado struct {
 	Rbc	string				`json:"rbc"`
 	Cid	bson.ObjectId `bson:"c_id" json:"cid,omitempty"`
 	Clt	string				`json:"clt"`
+	Eid	bson.ObjectId `bson:"e_id" json:"eid,omitempty"`
 	*jwt.StandardClaims
+}
+
+type Autorizacion struct {
+	Token			string		`json:"token"`
+	Logo			string		`json:"logo"`
+	Usuario		string		`json:"usuario"`
+	Menu			[]Opcion	`json:"menu"`
 }

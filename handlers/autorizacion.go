@@ -6,7 +6,10 @@ import (
   "strings"
 
   "github.com/pgmonzon/Yangee/core"
+  "github.com/pgmonzon/Yangee/models"
+
   "github.com/gorilla/context"
+  "gopkg.in/mgo.v2/bson"
 )
 
 
@@ -30,9 +33,38 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
     return
   }
 
-  // Hago el marshal del Token
-  // *************************
-  respuesta, err := json.Marshal(token)
+  // Busco el logo de la Empresa
+  // ***************************
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+  empresa, err, httpStat := Empresa_X_ID(empresaID)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "Buscando Empresa", err.Error(), httpStat)
+    return
+  }
+
+  // Busco los datos del usuario
+  // ***************************
+  usuarioID := context.Get(req, "Usuario_id").(bson.ObjectId)
+  usuario, err, httpStat := Usuario_X_ID(usuarioID)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "Buscando Usuario", err.Error(), httpStat)
+    return
+  }
+
+  // Hago el marshal de la autorización
+  // **********************************
+  var autorizacion models.Autorizacion
+  autorizacion.Token = token.Token
+  autorizacion.Logo = empresa.Logo
+  usr := []string{usuario.Nombre, " ", usuario.Apellido}
+  strUsr := strings.Join(usr, "")
+  if strUsr == " " {
+    autorizacion.Usuario = usuario.Usuario
+  } else {
+    autorizacion.Usuario = strUsr
+  }
+  autorizacion.Menu = usuario.Menu
+  respuesta, err := json.Marshal(autorizacion)
   if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
     core.RspMsgJSON(w, req, "ERROR", "Marshal", strings.Join(s, ""), http.StatusInternalServerError)

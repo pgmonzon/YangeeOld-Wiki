@@ -92,6 +92,7 @@ func GenerarToken(aut models.AutorizarTokenCliente, req *http.Request) (models.T
     return tokenAutorizado, err, httpStat
 	}
 
+
   permisosEncriptados, err, httpStat := core.Encriptar(config.Aes, permisos)
   if err != nil {
     return tokenAutorizado, err, httpStat
@@ -106,6 +107,8 @@ func GenerarToken(aut models.AutorizarTokenCliente, req *http.Request) (models.T
   claims["cid"] = context.Get(req, "ClienteAPI_id").(bson.ObjectId)
   claims["clt"] = context.Get(req, "ClienteAPI").(string)
   claims["uid"] = context.Get(req, "Usuario_id").(bson.ObjectId)
+  claims["eid"] = context.Get(req, "Empresa_id").(bson.ObjectId)
+
   token.Claims = claims
 
 	tokenString, err := token.SignedString(config.SignKey)
@@ -177,6 +180,7 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     context.Set(req, "ClienteAPI", claims.Clt)
     context.Set(req, "Usuario_id", claims.Uid)
     context.Set(req, "Usuario", claims.Usr)
+    context.Set(req, "Empresa_id", claims.Eid)
 
     // Me fijo si está Expirado
     // ************************

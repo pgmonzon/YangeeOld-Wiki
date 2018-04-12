@@ -253,11 +253,38 @@ func UsuarioLogin(usuarioLogin string, claveLogin string, req *http.Request) (er
   // ************************
   context.Set(req, "Usuario_id", usuario.ID)
   context.Set(req, "Usuario", usuario.Usuario)
+  context.Set(req, "Empresa_id", usuario.Empresa_id)
 
   // Está todo Ok
   // ************
   return nil, http.StatusOK
 }
+
+func Usuario_X_ID(usuarioID bson.ObjectId) (models.Usuario, error, int) {
+  var usuario models.Usuario
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, _ := core.GetMongoSession()
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return usuario, fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+  collection.Find(bson.M{"_id": usuarioID}).One(&usuario)
+  // No existe
+  if usuario.ID == "" {
+    s := []string{"INVALID_PARAMS: El usuario no existe"}
+    return usuario, fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
+  }
+  // Existe
+  return usuario, nil, http.StatusOK
+}
+
 
 /**
 func TestPermisos(w http.ResponseWriter, req *http.Request) {
