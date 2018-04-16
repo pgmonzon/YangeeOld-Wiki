@@ -29,7 +29,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
     rsp.Mensaje = strings.Join(s, "")
     respuesta, error := json.Marshal(rsp)
     core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    core.RspJSON(w, req, start, respuesta, http.StatusBadRequest)
     return
   } else {
     if reqCliente.Usuario == "" || reqCliente.Clave == "" || reqCliente.Audience == "" {
@@ -39,7 +39,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
       rsp.Mensaje = strings.Join(s, "")
       respuesta, error := json.Marshal(rsp)
       core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+      core.RspJSON(w, req, start, respuesta, http.StatusBadRequest)
       return
     } else {
       var clienteAPI models.ClienteAPI
@@ -52,7 +52,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
         rsp.Mensaje = strings.Join(s, "")
         respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, httpStat)
+        core.RspJSON(w, req, start, respuesta, httpStat)
         return
       }
 
@@ -63,7 +63,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
         rsp.Mensaje = strings.Join(s, "")
         respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+        core.RspJSON(w, req, start, respuesta, http.StatusBadRequest)
         return
       }
 
@@ -75,7 +75,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
         rsp.Mensaje = strings.Join(s, "")
         respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, httpStat)
+        core.RspJSON(w, req, start, respuesta, httpStat)
         return
       }
       token := jwt.New(jwt.SigningMethodHS256)
@@ -93,7 +93,7 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
         rsp.Mensaje = strings.Join(s, "")
         respuesta, error := json.Marshal(rsp)
         core.FatalErr(error)
-        core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
+        core.RspJSON(w, req, start, respuesta, http.StatusInternalServerError)
         return
       } else {
         var tokenCliente models.TokenCliente
@@ -106,10 +106,10 @@ func TokenCliente(w http.ResponseWriter, req *http.Request) {
           rsp.Mensaje = strings.Join(s, "")
           respuesta, error := json.Marshal(rsp)
           core.FatalErr(error)
-          core.RespuestaJSON(w, req, start, respuesta, http.StatusInternalServerError)
+          core.RspJSON(w, req, start, respuesta, http.StatusInternalServerError)
           return
         } else {
-          core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
+          core.RspJSON(w, req, start, respuesta, http.StatusOK)
           return
         }
       }
