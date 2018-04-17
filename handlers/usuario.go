@@ -5,15 +5,18 @@ import (
   "fmt"
   "strings"
   "strconv"
+  "time"
+  "encoding/json"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
   "github.com/pgmonzon/Yangee/config"
 
+  "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
   "github.com/gorilla/context"
 )
-/**
+
 func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 	var Usuarios models.Usuarios
@@ -163,7 +166,7 @@ func UsuarioExiste(usuarioExiste string) (error) {
     }
   }
 }
-**/
+
 func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
 
   // Genero una nueva sesión Mongo

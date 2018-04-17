@@ -19,8 +19,16 @@ type Usuario struct {
 }
 
 type Usuarios struct {
-	Usuarios	[]Usuario				`json:"usuarios"`
+	Usuarios	[]Usuario2				`json:"usuarios"`
 }
+//**********SACAR
+type Usuario2 struct {
+	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
+	Usuario			string        	`json:"usuario"`
+	Clave				string					`json:"clave"`
+	Mail				string					`json:"mail"`
+}
+
 
 type UsuarioX struct {
 	ID        bson.ObjectId 	`bson:"_id" json:"id"`

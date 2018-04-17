@@ -15,7 +15,7 @@ func InicializarRutas() {
 	// Autorización
 	// ************
 	router.HandleFunc("/autorizar", handlers.ValidarMiddleware(handlers.Autorizar, "NO_VALIDAR")).Methods("POST")
-	//router.HandleFunc("/tokenCliente", handlers.ValidarMiddleware(handlers.TokenCliente, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/tokenCliente", handlers.ValidarMiddleware(handlers.TokenCliente, "NO_VALIDAR")).Methods("POST")
 
 	// Filosofos
 	// *********
@@ -30,7 +30,7 @@ func InicializarRutas() {
 	// Usuario
 	// *******
 	//router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioRegistrar, "UsuarioRegistrar")).Methods("POST")
-	//router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioRegistrar, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioRegistrar, "NO_VALIDAR")).Methods("POST")
 	//router.HandleFunc("/usuarioPermisos", handlers.ValidarMiddleware(handlers.UsuarioPermisos)).Methods("GET")
 
 	// ClientesAPI
