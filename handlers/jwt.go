@@ -135,6 +135,10 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     context.Set(req, "Novedad", "")
     context.Set(req, "Objeto_id", objID)
     context.Set(req, "Audit", "")
+    context.Set(req, "ClienteAPI_id", objID)
+    context.Set(req, "ClienteAPI", "")
+    context.Set(req, "Usuario_id", objID)
+    context.Set(req, "Usuario", "")
 
     // Si es NO_VALIDAR redirecciono directamente
     // ******************************************
