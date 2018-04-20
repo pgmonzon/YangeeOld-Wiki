@@ -585,11 +585,13 @@ func Filosofo_X_ID(filosofoID bson.ObjectId) (models.Filosofo, error, int) {
   // ****************
   collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
   collection.Find(bson.M{"_id": filosofoID}).One(&filosofo)
-  // No existe
+  // Si no existe devuelvo error
   if filosofo.ID == "" {
     s := []string{"INVALID_PARAMS: El filósofo no existe"}
     return filosofo, fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
   }
+
   // Existe
+  // ******
   return filosofo, nil, http.StatusOK
 }

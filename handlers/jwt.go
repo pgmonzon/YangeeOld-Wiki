@@ -24,7 +24,7 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
 
   // Busco la firma y la clave de encriptación que usa el cliente API
   // ****************************************************************
-  clienteAPI, err, httpStat := ClienteAPITraer(req.Header.Get("API_ClienteID"))
+  clienteAPI, err, httpStat := ClienteAPI_X_clienteAPI(req.Header.Get("API_ClienteID"))
   if err != nil {
     return aut, err, httpStat
   }

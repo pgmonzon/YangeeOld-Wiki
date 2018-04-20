@@ -5,8 +5,6 @@ import (
   "fmt"
   "strings"
   "strconv"
-  "time"
-  "encoding/json"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -16,7 +14,7 @@ import (
   "gopkg.in/mgo.v2/bson"
   "github.com/gorilla/context"
 )
-
+/**
 func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
   start := time.Now()
 	var Usuarios models.Usuarios
@@ -132,7 +130,7 @@ func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
     }
   }
 }
-
+**/
 func UsuarioExiste(usuarioExiste string) (error) {
   var usuario models.Usuario
   // Genero una nueva sesión Mongo
@@ -287,88 +285,3 @@ func Usuario_X_ID(usuarioID bson.ObjectId) (models.Usuario, error, int) {
   // Existe
   return usuario, nil, http.StatusOK
 }
-
-
-/**
-func TestPermisos(w http.ResponseWriter, req *http.Request) {
-  start := time.Now()
-  var resp models.Resp
-  var mensaje models.Mensaje
-  usuarioPermisos := "patricio"
-  // Genero una nueva sesión Mongo
-  session, err, _ := core.GetMongoSession()
-  if err != nil {
-    resp.EstadoGral = "ERROR"
-    mensaje.Valor = "MongoSession"
-    mensaje.Estado = "ERROR"
-    mensaje.Mensaje = err.Error()
-    resp.Mensajes = append(resp.Mensajes, mensaje)
-    respuesta, error := json.Marshal(resp)
-    core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-    return
-  } else {
-    defer session.Close()
-    cUsuario := session.DB(config.DB_Name).C(config.DB_Usuario)
-
-    // Busco el usuario y verifico que esté activo
-    var usuario models.Usuario
-    cUsuario.Find(bson.M{"usuario": usuarioPermisos, "activo": true, "borrado": false}).One(&usuario)
-    if usuario.ID == "" {
-      resp.EstadoGral = "ERROR"
-      mensaje.Valor = "Usuario inválido"
-      mensaje.Estado = "ERROR"
-      mensaje.Mensaje = "Usuario inválido"
-      resp.Mensajes = append(resp.Mensajes, mensaje)
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-      return
-    } else {
-      // Obtengo los ID roles del usuario
-      rolesArr := []bson.ObjectId{}
-      for _, item := range usuario.Roles {
-        if item.ID != "" {
-          rolesArr = append(rolesArr, item.ID)
-        }
-      }
-
-      roles := make([]models.Rol, 0)
-      cRoles := session.DB(config.DB_Name).C(config.DB_Rol)
-      cRoles.Find(bson.M{"_id": bson.M{"$in": rolesArr}}).All(&roles)
-
-      // Obtengo los ID permisos de los roles
-      permisosArr := []bson.ObjectId{}
-      for _, itemRol := range roles {
-        for _, itemPermiso := range itemRol.Permisos {
-          if itemPermiso.ID != "" {
-            permisosArr = append(permisosArr, itemPermiso.ID)
-          }
-        }
-      }
-
-      permisos := make([]models.Permiso, 0)
-      cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
-      cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
-
-      // Junto los permisos en un string
-      permisosStr := []string{}
-      permisosStr = append(permisosStr, "#")
-      for _, itemItem := range permisos {
-        if itemItem.Permiso != "" {
-          permisosStr = append(permisosStr, itemItem.Permiso)
-        }
-      }
-      permisosStr = append(permisosStr, "#")
-      permisosUsuario := strings.Join(permisosStr, "#")
-      //return permisosUsuario, nil, http.StatusOK
-      log.Printf(permisosUsuario)
-
-      respuesta, error := json.Marshal(permisos)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, http.StatusOK)
-      return
-    }
-  }
-}
-**/

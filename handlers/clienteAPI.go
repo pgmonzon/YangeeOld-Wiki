@@ -5,6 +5,7 @@ import (
   "net/http"
   "fmt"
   "strings"
+  "time"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -15,7 +16,8 @@ import (
   "github.com/gorilla/context"
 )
 
-func CrearClienteAPI(w http.ResponseWriter, req *http.Request) {
+
+func ClienteAPICrear(w http.ResponseWriter, req *http.Request) {
 	var clienteAPI models.ClienteAPI
 
   // Decode del JSON
@@ -36,7 +38,7 @@ func CrearClienteAPI(w http.ResponseWriter, req *http.Request) {
 
   // Me fijo si ya Existe
   // ********************
-  err, httpStat := ExisteClienteAPI(clienteAPI.ClienteAPI)
+  err, httpStat := ClienteAPIExiste(clienteAPI.ClienteAPI)
   if err != nil {
     core.RspMsgJSON(w, req, "ERROR", clienteAPI.ClienteAPI, err.Error(), httpStat)
     return
@@ -55,6 +57,8 @@ func CrearClienteAPI(w http.ResponseWriter, req *http.Request) {
   // ***************
   objID := bson.NewObjectId()
   clienteAPI.ID = objID
+  clienteAPI.Timestamp = time.Now()
+  clienteAPI.Borrado = false
   context.Set(req, "Coleccion", config.DB_ClienteAPI)
   collection := session.DB(config.DB_Name).C(config.DB_ClienteAPI)
   err = collection.Insert(clienteAPI)
@@ -64,13 +68,20 @@ func CrearClienteAPI(w http.ResponseWriter, req *http.Request) {
     return
   }
 
+  // Establezco las variables
+  // ************************
+  context.Set(req, "TipoOper", "#Novedad#")
+  context.Set(req, "Coleccion", config.DB_ClienteAPI)
+  context.Set(req, "Objeto_id", clienteAPI.ID)
+  context.Set(req, "Audit", clienteAPI)
+
   // Está todo Ok
   // ************
   core.RspMsgJSON(w, req, "OK", clienteAPI.ClienteAPI, "Ok", http.StatusCreated)
   return
 }
 
-func ExisteClienteAPI(clienteAPIExiste string) (error, int) {
+func ClienteAPIExiste(clienteAPIExiste string) (error, int) {
   var clienteAPI models.ClienteAPI
 
   // Genero una nueva sesión Mongo
@@ -120,7 +131,7 @@ func ExisteClienteAPI(clienteAPIExiste string) (error, int) {
   return fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
 }
 
-func ClienteAPITraer(cteAPI string) (models.ClienteAPI, error, int) {
+func ClienteAPI_X_clienteAPI(cteAPI string) (models.ClienteAPI, error, int) {
   var clienteAPI models.ClienteAPI
 
   // Genero una nueva sesión Mongo
@@ -142,7 +153,7 @@ func ClienteAPITraer(cteAPI string) (models.ClienteAPI, error, int) {
     return clienteAPI, fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
   }
 
-  // Está todo Ok
-  // ************
+  // Existe
+  // ******
   return clienteAPI, nil, http.StatusOK
 }

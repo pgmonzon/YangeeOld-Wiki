@@ -1,6 +1,7 @@
 package models
 
 import (
+  "time"
   "gopkg.in/mgo.v2/bson"
 )
 
@@ -10,5 +11,6 @@ type ClienteAPI struct {
 	Firma 		  string		    `json:"firma"`
   Aes         string        `json:"aes"`
   Activo		  bool   				`json:"activo"`
-  Borrado     bool         	`json:"borrado"`
+  Borrado     bool         	`json:"borrado,omitempty"`
+  Timestamp	time.Time				`json:"timestamp, omitempty"`
 }
