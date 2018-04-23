@@ -37,17 +37,21 @@ func RspJSON(w http.ResponseWriter, req *http.Request, respuesta []byte, code in
 
   start := context.Get(req, "Start").(time.Time)
 
-  RegistrarCicloDeVida(req, code, start)
+  if config.RegistrarCicloDeVida {
+    RegistrarCicloDeVida(req, code, start)
+  }
 
-  log.Printf("%s\t%s\t%s\t%s\t%d\t%d\t%s",
-		req.RemoteAddr,
-		req.Method,
-		req.RequestURI,
-		req.Proto,
-		code,
-		len(respuesta),
-		time.Since(start),
-	)
+  if config.MostarEnConsola {
+    log.Printf("%s\t%s\t%s\t%s\t%d\t%d\t%s",
+  		req.RemoteAddr,
+  		req.Method,
+  		req.RequestURI,
+  		req.Proto,
+  		code,
+  		len(respuesta),
+  		time.Since(start),
+  	)
+  }
 }
 
 func RegistrarCicloDeVida(req *http.Request, code int, start time.Time) {
@@ -67,11 +71,8 @@ func RegistrarCicloDeVida(req *http.Request, code int, start time.Time) {
     cicloVida.ClienteAPI = context.Get(req, "ClienteAPI").(string)
     cicloVida.Usuario_id = context.Get(req, "Usuario_id").(bson.ObjectId)
     cicloVida.Usuario = context.Get(req, "Usuario").(string)
-    cicloVida.TipoOper = context.Get(req, "TipoOper").(string)
-    cicloVida.Coleccion = context.Get(req, "Coleccion").(string)
-    cicloVida.Novedad = context.Get(req, "Novedad").(string)
-    cicloVida.Objeto_id = context.Get(req, "Objeto_id").(bson.ObjectId)
-    cicloVida.Audit = context.Get(req, "Audit")
+    cicloVida.Empresa_id = context.Get(req, "Empresa_id").(bson.ObjectId)
+    cicloVida.Empresa = context.Get(req, "Empresa").(string)
 
     collection := session.DB(config.DB_Name).C(config.DB_CicloVida)
     err :=collection.Insert(cicloVida)

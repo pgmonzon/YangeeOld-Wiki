@@ -10,6 +10,10 @@ import (
 )
 
 const(
+  // Consola
+  MostarEnConsola = true
+  RegistrarCicloDeVida = true
+
   // Base de datos
   DB_Host = "localhost"
   //DB_Host = "mongodb://127.0.0.1:27017"
@@ -21,6 +25,7 @@ const(
   DB_Transaction = "transaction"
 
   DB_CicloVida = "cicloVida" // ciclo de vida
+  DB_Modulo = "modulos" // módulos del sistema
   DB_Empresa = "empresas" // empresa del usuario
   DB_Usuario = "usuarios" // tabla de usuarios
   DB_ClienteAPI = "clientesApi" // tabla de los clientes de la API

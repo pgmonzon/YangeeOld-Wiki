@@ -7,9 +7,6 @@ import (
 
   "github.com/pgmonzon/Yangee/core"
   "github.com/pgmonzon/Yangee/models"
-
-  "github.com/gorilla/context"
-  "gopkg.in/mgo.v2/bson"
 )
 
 
@@ -17,10 +14,9 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
 
   // Valido el token del clienteAPI
   // ******************************
-  aut, err, httpStat := ValidarTokenCliente(w, req)
-  if err != nil {
-    s := []string{err.Error()}
-    core.RspMsgJSON(w, req, "ERROR", "ValidarTokenCliente", strings.Join(s, ""), httpStat)
+  estado, valor, mensaje, httpStat, aut, usuario, empresa := ValidarTokenCliente(w, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
 
@@ -30,24 +26,6 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
   if err != nil {
     s := []string{err.Error()}
     core.RspMsgJSON(w, req, "ERROR", "GenerarToken", strings.Join(s, ""), httpStat)
-    return
-  }
-
-  // Busco el logo de la Empresa
-  // ***************************
-  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
-  empresa, err, httpStat := Empresa_X_ID(empresaID)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "Buscando Empresa", err.Error(), httpStat)
-    return
-  }
-
-  // Busco los datos del usuario
-  // ***************************
-  usuarioID := context.Get(req, "Usuario_id").(bson.ObjectId)
-  usuario, err, httpStat := Usuario_X_ID(usuarioID)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "Buscando Usuario", err.Error(), httpStat)
     return
   }
 
@@ -71,14 +49,52 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
     return
   }
 
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Login#")
-  s := []string{"Ingresó al sistema"}
-  context.Set(req, "Novedad", strings.Join(s, ""))
-
   // Está todo Ok
   // ************
   core.RspJSON(w, req, respuesta, http.StatusOK)
   return
 }
+/*
+func InvitacionEmpresa(w http.ResponseWriter, req *http.Request) {
+	var invitacionEmpresa models.InvitacionEmpresa
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&invitacionEmpresa)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Verifico los campos obligatorios
+  // ********************************
+  if invitacionEmpresa.Empresa == "" || invitacionEmpresa.Rol == "" || invitacionEmpresa.Mail == "" {
+    core.RspMsgJSON(w, req, "ERROR", "InvitacionEmpresa", "INVALID_PARAMS: empresa, rol y mail no pueden estar vacíos", http.StatusBadRequest)
+    return
+  }
+
+  // Doy de alta la empresa
+  // **********************
+  empresa.Empresa = invitacionEmpresa.Empresa
+  s := []string{invitacionEmpresa.Empresa, ".jpg"}
+  empresa.Logo = strings.Join(s, "")
+  empresa.Activo = true
+  estado, valor, mensaje, httpStat, empresa, _ := EmpresaAlta(empresa)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+  }
+
+  // Establezco las variables
+  // ************************
+  context.Set(req, "TipoOper", "#Novedad#")
+  context.Set(req, "Coleccion", config.DB_ClienteAPI)
+  context.Set(req, "Objeto_id", clienteAPI.ID)
+  context.Set(req, "Audit", clienteAPI)
+
+  // Está todo Ok
+  // ************
+  core.RspMsgJSON(w, req, "OK", clienteAPI.ClienteAPI, "Ok", http.StatusCreated)
+  return
+}
+*/

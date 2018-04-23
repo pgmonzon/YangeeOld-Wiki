@@ -18,15 +18,17 @@ import (
 )
 
 // Valida el token generado por el cliente API
-func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.AutorizarTokenCliente, error, int) {
+func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (string, string, string, int, models.AutorizarTokenCliente, models.Usuario, models.Empresa) {
   var aut models.AutorizarTokenCliente
+  var usuario models.Usuario
+  var empresa models.Empresa
   var clienteAPI models.ClienteAPI
 
   // Busco la firma y la clave de encriptación que usa el cliente API
   // ****************************************************************
   clienteAPI, err, httpStat := ClienteAPI_X_clienteAPI(req.Header.Get("API_ClienteID"))
   if err != nil {
-    return aut, err, httpStat
+    return "ERROR", "ClienteAPI_X_clienteAPI", err.Error(), httpStat, aut, usuario, empresa
   }
 
   // Establezco las variables
@@ -42,14 +44,14 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
 		})
   if err != nil {
     s := []string{"INVALID_PARAMS:", err.Error()}
-    return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
+    return "ERROR", "ParseFromRequestWithClaims", strings.Join(s, " "), http.StatusBadRequest, aut, usuario, empresa
   }
 
   // Me fijo si es válido el token
   // *****************************
   if !token.Valid {
     s := []string{"INVALID_PARAMS: Token inválido"}
-    return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
+    return "ERROR", "Token Valid", strings.Join(s, " "), http.StatusBadRequest, aut, usuario, empresa
   }
 
   // Hago el decode del token
@@ -61,26 +63,33 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (models.Autor
   // **************************
   if claims.IssuedAt < time.Now().Add(-time.Minute * config.ExpiraTokenAut).Unix() {
     s := []string{"INVALID_PARAMS:", "Expiró el token"}
-    return aut, fmt.Errorf(strings.Join(s, " ")), http.StatusBadRequest
+    return "ERROR", "Token Expiración", strings.Join(s, " "), http.StatusBadRequest, aut, usuario, empresa
   }
 
   // Intento desencriptar la clave
   // *****************************
   claveDesencriptada, err, httpStat := core.Desencriptar(clienteAPI.Aes, claims.Pas)
   if err != nil {
-    return aut, err, httpStat
+    return "ERROR", "Desencriptar clave", err.Error(), httpStat, aut, usuario, empresa
   }
 
   // Intento loguear el Usuario
   // **************************
-  err, httpStat = UsuarioLogin(claims.Usr, claveDesencriptada, req)
-  if err != nil {
-    return aut, err, httpStat
+  estado, valor, mensaje, httpStat, usuario, empresa := UsuarioLogin(claims.Usr, claveDesencriptada)
+  if httpStat != http.StatusOK {
+    return estado, valor, mensaje, httpStat, aut, usuario, empresa
   }
+
+  // Establezco las variables
+  // ************************
+  context.Set(req, "Usuario_id", usuario.ID)
+  context.Set(req, "Usuario", usuario.Usuario)
+  context.Set(req, "Empresa_id", usuario.Empresa_id)
+  context.Set(req, "Empresa", empresa.Empresa)
 
   // Está todo Ok
   // ************
-  return aut, nil, http.StatusOK
+  return "OK", "ValidarTokenCliente", "Ok", http.StatusOK, aut, usuario, empresa
 }
 
 // Genera el token para el usuario autorizado
@@ -91,7 +100,6 @@ func GenerarToken(aut models.AutorizarTokenCliente, req *http.Request) (models.T
   if err != nil {
     return tokenAutorizado, err, httpStat
 	}
-
 
   permisosEncriptados, err, httpStat := core.Encriptar(config.Aes, permisos)
   if err != nil {
@@ -108,6 +116,7 @@ func GenerarToken(aut models.AutorizarTokenCliente, req *http.Request) (models.T
   claims["clt"] = context.Get(req, "ClienteAPI").(string)
   claims["uid"] = context.Get(req, "Usuario_id").(bson.ObjectId)
   claims["eid"] = context.Get(req, "Empresa_id").(bson.ObjectId)
+  claims["emp"] = context.Get(req, "Empresa").(string)
 
   token.Claims = claims
 
@@ -121,6 +130,7 @@ func GenerarToken(aut models.AutorizarTokenCliente, req *http.Request) (models.T
   return tokenAutorizado, nil, http.StatusOK
 }
 
+// Todas las operaciones del router pasan por aca
 func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
   return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
     start := time.Now()
@@ -130,18 +140,15 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     objID := bson.NewObjectId()
     context.Set(req, "CicloDeVida_id", objID)
     context.Set(req, "Start", start)
-    context.Set(req, "TipoOper", "")
-    context.Set(req, "Coleccion", "")
-    context.Set(req, "Novedad", "")
-    context.Set(req, "Objeto_id", objID)
-    context.Set(req, "Audit", "")
     context.Set(req, "ClienteAPI_id", objID)
     context.Set(req, "ClienteAPI", "")
     context.Set(req, "Usuario_id", objID)
     context.Set(req, "Usuario", "")
+    context.Set(req, "Empresa_id", objID)
+    context.Set(req, "Empresa", "")
 
     // Si es NO_VALIDAR redirecciono directamente
-    // ******************************************
+    // ******************************************************
     if permiso == "NO_VALIDAR" {
       next(w, req)
       return

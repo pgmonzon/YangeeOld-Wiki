@@ -19,9 +19,14 @@ type CicloDeVida struct {
   ClienteAPI    string          `json:"clienteAPI"`
   Usuario_id    bson.ObjectId   `bson:"usuario_id" json:"usuario_id,omitempty"`
   Usuario       string          `json:"usuario"`
-  TipoOper      string          `json:"tipoOper"`
-  Coleccion     string          `json:"coleccion"`
-  Objeto_id     bson.ObjectId   `bson:"objeto_id" json:"objeto_id,omitempty"`
-  Novedad       string          `json:"novedad"`
-  Audit         interface{}     `json:"audit,omitempty"`
+  Empresa_id    bson.ObjectId   `bson:"empresa_id" json:"empresa_id,omitempty"`
+  Empresa       string          `json:"empresa"`
 }
+
+/*
+TipoOper      string          `json:"tipoOper"`
+Coleccion     string          `json:"coleccion"`
+Objeto_id     bson.ObjectId   `bson:"objeto_id" json:"objeto_id,omitempty"`
+Novedad       string          `json:"novedad"`
+Audit         interface{}     `json:"audit,omitempty"`
+*/

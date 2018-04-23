@@ -12,7 +12,6 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
-  "github.com/gorilla/context"
 )
 /**
 func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
@@ -229,14 +228,15 @@ func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
   return permisosUsuario, nil, http.StatusOK
 }
 
-func UsuarioLogin(usuarioLogin string, claveLogin string, req *http.Request) (error, int) {
+func UsuarioLogin(usuarioLogin string, claveLogin string) (string, string, string, int, models.Usuario, models.Empresa) {
   var usuario models.Usuario
+  var empresa models.Empresa
 
   // Genero una nueva sesión Mongo
   // *****************************
   session, err, httpStat := core.GetMongoSession()
   if err != nil {
-    return err, httpStat
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, usuario, empresa
   }
 
   // Intento el login
@@ -247,18 +247,19 @@ func UsuarioLogin(usuarioLogin string, claveLogin string, req *http.Request) (er
   // Si no loguea
   if usuario.ID == "" {
     s := []string{"FORBIDDEN: ", "Usuario y clave incorrectos"}
-    return fmt.Errorf(strings.Join(s, "")), http.StatusForbidden
+    return "ERROR", "Login", strings.Join(s, ""), http.StatusForbidden, usuario, empresa
   }
 
-  // Establezco las variables
-  // ************************
-  context.Set(req, "Usuario_id", usuario.ID)
-  context.Set(req, "Usuario", usuario.Usuario)
-  context.Set(req, "Empresa_id", usuario.Empresa_id)
+  // Traigo la empresa del usuario
+  // *****************************
+  estado, valor, mensaje, httpStat, empresa := Empresa_X_ID(usuario.Empresa_id)
+  if httpStat != http.StatusOK {
+    return estado, valor, mensaje, httpStat, usuario, empresa
+  }
 
   // Está todo Ok
   // ************
-  return nil, http.StatusOK
+  return "OK", "Login", "Ok", http.StatusOK, usuario, empresa
 }
 
 func Usuario_X_ID(usuarioID bson.ObjectId) (models.Usuario, error, int) {
