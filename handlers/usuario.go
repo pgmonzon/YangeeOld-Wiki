@@ -1,10 +1,12 @@
 package handlers
 
 import (
+  "encoding/json"
   "net/http"
   "fmt"
   "strings"
   "strconv"
+  "time"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -13,155 +15,164 @@ import (
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
 )
-/**
-func UsuarioRegistrar(w http.ResponseWriter, req *http.Request) {
-  start := time.Now()
-	var Usuarios models.Usuarios
-  var resp models.Resp
-  var mensaje models.Mensaje
 
+func UsuarioCrear(w http.ResponseWriter, req *http.Request) {
+	var usuario models.Usuario
+
+  // Decode del JSON
+  // ***************
   decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&Usuarios)
+  err := decoder.Decode(&usuario)
   if err != nil {
-    resp.EstadoGral = "ERROR"
-    mensaje.Valor = "JSON"
-    mensaje.Estado = "ERROR"
-    mensaje.Mensaje = "INVALID_PARAMS: JSON decode erróneo"
-    resp.Mensajes = append(resp.Mensajes, mensaje)
-    respuesta, error := json.Marshal(resp)
-    core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
     return
-  } else {
-    // Genero una nueva sesión Mongo
-    session, err, httpStat := core.GetMongoSession()
-    if err != nil {
-      resp.EstadoGral = "ERROR"
-      mensaje.Valor = "MongoSession"
-      mensaje.Estado = "ERROR"
-      mensaje.Mensaje = err.Error()
-      resp.Mensajes = append(resp.Mensajes, mensaje)
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    } else {
-      defer session.Close()
-
-      // Recorro el JSON
-      for _, item := range Usuarios.Usuarios {
-        if item.Usuario == "" || item.Clave == "" || item.Mail == "" {
-          if resp.EstadoGral != "PARCIAL" {
-            if resp.EstadoGral == "OK" {
-              resp.EstadoGral = "PARCIAL"
-            } else {
-              resp.EstadoGral = "ERROR"
-            }
-          }
-          mensaje.Valor = item.Usuario
-          mensaje.Estado = "ERROR"
-          s := []string{"INTERNAL_SERVER_ERROR: ", "El campo usuario, clave y mail no pueden estar vacíos"}
-          mensaje.Mensaje = strings.Join(s, "")
-          resp.Mensajes = append(resp.Mensajes, mensaje)
-        } else {
-          // Me fijo si ya existe
-          err := UsuarioExiste(item.Usuario)
-          if err != nil {
-            if resp.EstadoGral != "PARCIAL" {
-              if resp.EstadoGral == "OK" {
-                resp.EstadoGral = "PARCIAL"
-              } else {
-                resp.EstadoGral = "ERROR"
-              }
-            }
-            mensaje.Valor = item.Usuario
-            mensaje.Estado = "ERROR"
-            mensaje.Mensaje = err.Error()
-            resp.Mensajes = append(resp.Mensajes, mensaje)
-          } else {
-            objID := bson.NewObjectId()
-          	item.ID = objID
-            //item.Encrip = core.HashSha512(item.Clave)
-            item.Clave = strconv.FormatInt(core.HashSha512(item.Clave),16)
-
-            // Intento el alta
-            collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-            err = collection.Insert(item)
-            if err != nil {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "OK" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "ERROR"
-                }
-              }
-              mensaje.Valor = item.Usuario
-              mensaje.Estado = "ERROR"
-              s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-              mensaje.Mensaje = strings.Join(s, "")
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            } else {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "ERROR" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "OK"
-                }
-              }
-              mensaje.Valor = item.Usuario
-              mensaje.Estado = "OK"
-              mensaje.Mensaje = "OK"
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            }
-          }
-        }
-      }
-      var httpStat int
-      if resp.EstadoGral == "OK" {
-        httpStat = http.StatusCreated
-      } else {
-        httpStat = http.StatusOK
-      }
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    }
   }
+
+  // Doy de alta
+  // ***********
+  estado, valor, mensaje, httpStat, usuario, existia := UsuarioAlta(usuario)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Agregó el usuario ", usuario.Usuario}
+  core.RspMsgJSON(w, req, "OK", usuario.Usuario, strings.Join(s, ""), http.StatusCreated)
+  return
 }
-**/
-func UsuarioExiste(usuarioExiste string) (error) {
-  var usuario models.Usuario
-  // Genero una nueva sesión Mongo
-  session, err, _ := core.GetMongoSession()
-  if err != nil {
-    return err
-  } else {
-    defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Usuario)
 
-    // Me aseguro el índice
-    index := mgo.Index{
-      Key:        []string{"usuario"},
-      Unique:     true,
-      DropDups:   false,
-      Background: true,
-      Sparse:     true,
-    }
-    err := collection.EnsureIndex(index)
-    if err != nil {
-      s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
+func UsuarioAlta(usuarioAlta models.Usuario) (string, string, string, int, models.Usuario, bool) {
+	var usuario models.Usuario
 
-    collection.Find(bson.M{"usuario": usuarioExiste}).One(&usuario)
-    if usuario.ID == "" {
-      return nil
-    } else {
-      s := []string{"INVALID_PARAMS: El usuario [", usuarioExiste,"] ya existe"}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
+  // Verifico los campos obligatorios
+  // ********************************
+  if usuarioAlta.Usuario == "" || usuarioAlta.Clave == "" || usuarioAlta.Mail == "" {
+    s := []string{"INVALID_PARAMS: usuario, clave y mail no pueden estar vacíos"}
+    return "ERROR", "UsuarioAlta", strings.Join(s, ""), http.StatusBadRequest, usuario, false
   }
+
+  // Me fijo si ya Existe
+  // ********************
+  estado, valor, mensaje, httpStat, usuario, existia := UsuarioExiste(usuarioAlta.Usuario)
+  if httpStat != http.StatusOK || existia == true {
+    return estado, valor, mensaje, httpStat, usuario, existia
+  }
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, usuario, false
+  }
+  defer session.Close()
+
+  // Intento el alta
+  // ***************
+  objID := bson.NewObjectId()
+  usuario.ID = objID
+  usuario.Usuario = usuarioAlta.Usuario
+  usuario.Clave = strconv.FormatInt(core.HashSha512(usuarioAlta.Clave),16)
+  usuario.Mail = usuarioAlta.Mail
+  usuario.Apellido = usuarioAlta.Apellido
+  usuario.Nombre = usuarioAlta.Nombre
+  usuario.Empresa_id = usuarioAlta.Empresa_id
+  usuario.Roles = usuarioAlta.Roles
+  usuario.Menu = usuarioAlta.Menu
+  usuario.Activo = usuarioAlta.Activo
+  usuario.Timestamp = time.Now()
+  usuario.Borrado = false
+  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+  err = collection.Insert(usuario)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "Insert Usuario", strings.Join(s, ""), http.StatusInternalServerError, usuario, false
+  }
+
+  // Está todo Ok
+  // ************
+  return "OK", "UsuarioAlta", "Ok", http.StatusOK, usuario, false
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
+func UsuarioExiste(usuarioExiste string) (string, string, string, int, models.Usuario, bool) {
+  var usuario models.Usuario
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, usuario, false
+  }
+  defer session.Close()
+
+  // Me aseguro el índice
+  // ********************
+  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+  index := mgo.Index{
+    Key:        []string{"usuario"},
+    Unique:     true,
+    DropDups:   false,
+    Background: true,
+    Sparse:     true,
+  }
+  err = collection.EnsureIndex(index)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "EnsureIndex", strings.Join(s, ""), http.StatusInternalServerError, usuario, false
+  }
+
+  // Verifico si Existe
+  // ******************
+  collection.Find(bson.M{"usuario": usuarioExiste}).One(&usuario)
+  // No existe
+  if usuario.ID == "" {
+    return "OK", "BuscarUsuario", "Ok", http.StatusOK, usuario, false
+  }
+  // Existe borrado
+  if usuario.Borrado == true {
+    s := []string{"INVALID_PARAMS: El usuario ", usuarioExiste," ya existe borrado"}
+    return "ERROR", "BuscarUsuario", strings.Join(s, ""), http.StatusBadRequest, usuario, true
+  }
+  // Existe inactivo
+  if usuario.Activo == false {
+    s := []string{"INVALID_PARAMS: El usuario ", usuarioExiste," ya existe inactivo"}
+    return "ERROR", "BuscarUsuario", strings.Join(s, ""), http.StatusBadRequest, usuario, true
+  }
+  // Existe
+  s := []string{"INVALID_PARAMS: El usuario ", usuarioExiste," ya existe"}
+  return "ERROR", "BuscarUsuario", strings.Join(s, ""), http.StatusBadRequest, usuario, true
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection
+func Usuario_X_ID(usuarioID bson.ObjectId) (string, string, string, int, models.Usuario) {
+  var usuario models.Usuario
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, usuario
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
+  collection.Find(bson.M{"_id": usuarioID}).One(&usuario)
+  // No existe
+  if usuario.ID == "" {
+    s := []string{"INVALID_PARAMS: El usuario no existe"}
+    return "ERROR", "BuscarUsuario", strings.Join(s, ""), http.StatusBadRequest, usuario
+  }
+  // Existe
+  return "OK", "BuscarUsuario", "Ok", http.StatusOK, usuario
 }
 
 func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
@@ -183,6 +194,23 @@ func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
   if usuario.ID == "" {
     s := []string{"INVALID_PARAMS: El usuario no existe o está inactivo"}
     return "", fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
+  }
+
+  // Traigo la empresa del usuario
+  // *****************************
+  _, _, _, httpStat, empresa := Empresa_X_ID(usuario.Empresa_id)
+  if httpStat != http.StatusOK || empresa.Activo == false || empresa.Borrado == true {
+    s := []string{"INVALID_PARAMS: La empresa del usuario no existe o está inactiva"}
+    return "", fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
+  }
+
+  // Busco los módulos de la empresa del usuario
+  // *******************************************
+  modulosArr := []bson.ObjectId{}
+  for _, itemMod := range empresa.Modulos {
+    if itemMod.ID != "" {
+      modulosArr = append(modulosArr, itemMod.ID)
+    }
   }
 
   // Obtengo los ID roles del usuario
@@ -209,7 +237,7 @@ func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
   }
   permisos := make([]models.Permiso, 0)
   cPermisos := session.DB(config.DB_Name).C(config.DB_Permiso)
-  cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}}).All(&permisos)
+  cPermisos.Find(bson.M{"_id": bson.M{"$in": permisosArr}, "modulo_id": bson.M{"$in": modulosArr}}).All(&permisos)
 
   // Junto los permisos en un string
   // *******************************
@@ -260,29 +288,4 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (string, string, strin
   // Está todo Ok
   // ************
   return "OK", "Login", "Ok", http.StatusOK, usuario, empresa
-}
-
-func Usuario_X_ID(usuarioID bson.ObjectId) (models.Usuario, error, int) {
-  var usuario models.Usuario
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, _ := core.GetMongoSession()
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return usuario, fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
-  }
-  defer session.Close()
-
-  // Trato de traerlo
-  // ****************
-  collection := session.DB(config.DB_Name).C(config.DB_Usuario)
-  collection.Find(bson.M{"_id": usuarioID}).One(&usuario)
-  // No existe
-  if usuario.ID == "" {
-    s := []string{"INVALID_PARAMS: El usuario no existe"}
-    return usuario, fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
-  }
-  // Existe
-  return usuario, nil, http.StatusOK
 }

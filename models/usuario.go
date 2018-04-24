@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,30 +17,19 @@ type Usuario struct {
 	Activo			bool   					`json:"activo"`
   Borrado   	bool          	`json:"borrado"`
 	Roles				[]IdRol					`json:"roles"`
-	Menu				[]Opcion				`json:"menu"`
+	Menu				[]Opcion				`json:"menu, omitempty"`
+	Timestamp		time.Time				`json:"timestamp, omitempty"`
 }
 
-type Usuarios struct {
-	Usuarios	[]Usuario2				`json:"usuarios"`
-}
-//**********SACAR
-type Usuario2 struct {
+type IdRol struct {
 	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
-	Usuario			string        	`json:"usuario"`
-	Clave				string					`json:"clave"`
-	Mail				string					`json:"mail"`
 }
 
-
-type UsuarioX struct {
-	ID        bson.ObjectId 	`bson:"_id" json:"id"`
-	Usuario   string        	`json:"usuario"`
-  Clave			int64 					`json:"clave"`
-  Mail      string        	`json:"mail"`
+type Opcion struct {
+	Opcion			string					`json:"opcion"`
+	Sub					[]Sub						`json:"sub,omitempty"`
 }
 
-type UsuarioRegistrar struct {
-	Usuario			  string        	`json:"usuario"`
-  Clave					string 					`json:"clave"`
-  Mail      		string        	`json:"mail"`
+type Sub struct {
+	Opcion		string					`json:"opcion"`
 }

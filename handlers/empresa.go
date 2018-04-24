@@ -1,6 +1,7 @@
 package handlers
 
 import (
+  "encoding/json"
   "net/http"
   "strings"
   "time"
@@ -12,6 +13,37 @@ import (
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
 )
+
+func EmpresaCrear(w http.ResponseWriter, req *http.Request) {
+	var empresa models.Empresa
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&empresa)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Doy de alta la empresa
+  // **********************
+  estado, valor, mensaje, httpStat, empresa, existia := EmpresaAlta(empresa)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Agregó la empresa ", empresa.Empresa}
+  core.RspMsgJSON(w, req, "OK", empresa.Empresa, strings.Join(s, ""), http.StatusCreated)
+  return
+}
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Empresa, Existía
 func EmpresaAlta(empresaAlta models.Empresa) (string, string, string, int, models.Empresa, bool) {
@@ -43,13 +75,17 @@ func EmpresaAlta(empresaAlta models.Empresa) (string, string, string, int, model
   // ***************
   objID := bson.NewObjectId()
   empresa.ID = objID
+  empresa.Empresa = empresaAlta.Empresa
+  empresa.Logo = empresaAlta.Logo
+  empresa.Modulos = empresaAlta.Modulos
+  empresa.Activo = empresaAlta.Activo
   empresa.Timestamp = time.Now()
   empresa.Borrado = false
   collection := session.DB(config.DB_Name).C(config.DB_Empresa)
   err = collection.Insert(empresa)
   if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return "ERROR", "Insert", strings.Join(s, ""), http.StatusInternalServerError, empresa, false
+    return "ERROR", "Insert Empresa", strings.Join(s, ""), http.StatusInternalServerError, empresa, false
   }
 
   // Está todo Ok
@@ -95,16 +131,16 @@ func EmpresaExiste(empresaExiste string) (string, string, string, int, models.Em
   // Existe borrado
   if empresa.Borrado == true {
     s := []string{"INVALID_PARAMS: La empresa ", empresaExiste," ya existe borrada"}
-    return "OK", "BuscarEmpresa", strings.Join(s, ""), http.StatusOK, empresa, true
+    return "ERROR", "BuscarEmpresa", strings.Join(s, ""), http.StatusBadRequest, empresa, true
   }
   // Existe inactivo
   if empresa.Activo == false {
     s := []string{"INVALID_PARAMS: La empresa ", empresaExiste," ya existe inactiva"}
-    return "OK", "BuscarEmpresa", strings.Join(s, ""), http.StatusOK, empresa, true
+    return "ERROR", "BuscarEmpresa", strings.Join(s, ""), http.StatusBadRequest, empresa, true
   }
   // Existe
   s := []string{"INVALID_PARAMS: La empresa ", empresaExiste," ya existe"}
-  return "OK", "BuscarEmpresa", strings.Join(s, ""), http.StatusOK, empresa, true
+  return "ERROR", "BuscarEmpresa", strings.Join(s, ""), http.StatusBadRequest, empresa, true
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Empresa
