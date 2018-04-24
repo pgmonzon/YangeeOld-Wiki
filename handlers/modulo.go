@@ -28,7 +28,7 @@ func ModuloCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta el módulo
   // *********************
-  estado, valor, mensaje, httpStat, modulo, existia := ModuloAlta(modulo)
+  estado, valor, mensaje, httpStat, modulo, existia := ModuloAlta(modulo, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -46,7 +46,7 @@ func ModuloCrear(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Modulo, Existía
-func ModuloAlta(moduloAlta models.Modulo) (string, string, string, int, models.Modulo, bool) {
+func ModuloAlta(moduloAlta models.Modulo, req *http.Request) (string, string, string, int, models.Modulo, bool) {
 	var modulo models.Modulo
 
   // Verifico los campos obligatorios
@@ -88,6 +88,7 @@ func ModuloAlta(moduloAlta models.Modulo) (string, string, string, int, models.M
 
   // Está todo Ok
   // ************
+  core.Audit(req, config.DB_Modulo, modulo.ID, "Alta", modulo)
   return "OK", "ModuloAlta", "Ok", http.StatusOK, modulo, false
 }
 

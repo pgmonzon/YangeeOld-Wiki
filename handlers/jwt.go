@@ -192,6 +192,7 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     context.Set(req, "Usuario_id", claims.Uid)
     context.Set(req, "Usuario", claims.Usr)
     context.Set(req, "Empresa_id", claims.Eid)
+    context.Set(req, "Empresa", claims.Emp)
 
     // Me fijo si está Expirado
     // ************************

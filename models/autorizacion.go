@@ -22,6 +22,7 @@ type TokenAutorizado struct {
 	Cid	bson.ObjectId `bson:"c_id" json:"cid,omitempty"`
 	Clt	string				`json:"clt"`
 	Eid	bson.ObjectId `bson:"e_id" json:"eid,omitempty"`
+	Emp	string				`json:"emp"`
 	*jwt.StandardClaims
 }
 

@@ -28,7 +28,7 @@ func EmpresaCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta la empresa
   // **********************
-  estado, valor, mensaje, httpStat, empresa, existia := EmpresaAlta(empresa)
+  estado, valor, mensaje, httpStat, empresa, existia := EmpresaAlta(empresa, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -46,7 +46,7 @@ func EmpresaCrear(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Empresa, Existía
-func EmpresaAlta(empresaAlta models.Empresa) (string, string, string, int, models.Empresa, bool) {
+func EmpresaAlta(empresaAlta models.Empresa, req *http.Request) (string, string, string, int, models.Empresa, bool) {
 	var empresa models.Empresa
 
   // Verifico los campos obligatorios
@@ -90,6 +90,7 @@ func EmpresaAlta(empresaAlta models.Empresa) (string, string, string, int, model
 
   // Está todo Ok
   // ************
+  core.Audit(req, config.DB_Empresa, empresa.ID, "Alta", empresa)
   return "OK", "EmpresaAlta", "Ok", http.StatusOK, empresa, false
 }
 

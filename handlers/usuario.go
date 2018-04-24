@@ -30,7 +30,7 @@ func UsuarioCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta
   // ***********
-  estado, valor, mensaje, httpStat, usuario, existia := UsuarioAlta(usuario)
+  estado, valor, mensaje, httpStat, usuario, existia := UsuarioAlta(usuario, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -48,7 +48,7 @@ func UsuarioCrear(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
-func UsuarioAlta(usuarioAlta models.Usuario) (string, string, string, int, models.Usuario, bool) {
+func UsuarioAlta(usuarioAlta models.Usuario, req *http.Request) (string, string, string, int, models.Usuario, bool) {
 	var usuario models.Usuario
 
   // Verifico los campos obligatorios
@@ -97,6 +97,7 @@ func UsuarioAlta(usuarioAlta models.Usuario) (string, string, string, int, model
 
   // Está todo Ok
   // ************
+  core.Audit(req, config.DB_Usuario, usuario.ID, "Alta", usuario)
   return "OK", "UsuarioAlta", "Ok", http.StatusOK, usuario, false
 }
 

@@ -25,6 +25,7 @@ const(
   DB_Transaction = "transaction"
 
   DB_CicloVida = "cicloVida" // ciclo de vida
+  DB_Audit = "audit" // auditoría
   DB_Modulo = "modulos" // módulos del sistema
   DB_Empresa = "empresas" // empresa del usuario
   DB_Usuario = "usuarios" // tabla de usuarios

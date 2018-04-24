@@ -29,7 +29,7 @@ func PermisoCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta
   // ***********
-  estado, valor, mensaje, httpStat, permiso, existia := PermisoAlta(permiso)
+  estado, valor, mensaje, httpStat, permiso, existia := PermisoAlta(permiso, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -47,7 +47,7 @@ func PermisoCrear(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Permiso, Existía
-func PermisoAlta(permisoAlta models.Permiso) (string, string, string, int, models.Permiso, bool) {
+func PermisoAlta(permisoAlta models.Permiso, req *http.Request) (string, string, string, int, models.Permiso, bool) {
 	var permiso models.Permiso
 
   // Verifico los campos obligatorios
@@ -90,6 +90,7 @@ func PermisoAlta(permisoAlta models.Permiso) (string, string, string, int, model
 
   // Está todo Ok
   // ************
+  core.Audit(req, config.DB_Permiso, permiso.ID, "Alta", permiso)
   return "OK", "PermisoAlta", "Ok", http.StatusOK, permiso, false
 }
 
@@ -182,7 +183,7 @@ func RolCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta
   // ***********
-  estado, valor, mensaje, httpStat, rol, existia := RolAlta(rol)
+  estado, valor, mensaje, httpStat, rol, existia := RolAlta(rol, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -200,7 +201,7 @@ func RolCrear(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
-func RolAlta(rolAlta models.Rol) (string, string, string, int, models.Rol, bool) {
+func RolAlta(rolAlta models.Rol, req *http.Request) (string, string, string, int, models.Rol, bool) {
 	var rol models.Rol
 
   // Verifico los campos obligatorios
@@ -244,6 +245,7 @@ func RolAlta(rolAlta models.Rol) (string, string, string, int, models.Rol, bool)
 
   // Está todo Ok
   // ************
+  core.Audit(req, config.DB_Rol, rol.ID, "Alta", rol)
   return "OK", "RolAlta", "Ok", http.StatusOK, rol, false
 }
 
