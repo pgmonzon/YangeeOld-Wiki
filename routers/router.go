@@ -14,21 +14,21 @@ func InicializarRutas() {
 
 	// ClientesAPI
 	// ***********
-	router.HandleFunc("/clienteAPI", handlers.ValidarMiddleware(handlers.ClienteAPICrear, "ClienteAPICrear")).Methods("POST")
+	router.HandleFunc("/clienteAPI", handlers.ValidarMiddleware(handlers.ClienteAPICrear, "NO_VALIDAR")).Methods("POST")
 
 	// Autorización
 	// ************
-	router.HandleFunc("/modulo", handlers.ValidarMiddleware(handlers.ModuloCrear, "ModuloCrear")).Methods("POST")
-	router.HandleFunc("/empresa", handlers.ValidarMiddleware(handlers.EmpresaCrear, "EmpresaCrear")).Methods("POST")
+	router.HandleFunc("/modulo", handlers.ValidarMiddleware(handlers.ModuloCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/empresa", handlers.ValidarMiddleware(handlers.EmpresaCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/autorizar", handlers.ValidarMiddleware(handlers.Autorizar, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/tokenCliente", handlers.ValidarMiddleware(handlers.TokenCliente, "NO_VALIDAR")).Methods("POST")
 	//router.HandleFunc("/invitacionEmpresa", handlers.ValidarMiddleware(handlers.InvitacionEmpresa, "NO_VALIDAR")).Methods("POST")
 
 	// RBAC
 	// ****
-	router.HandleFunc("/permiso", handlers.ValidarMiddleware(handlers.PermisoCrear, "PermisoCrear")).Methods("POST")
-	router.HandleFunc("/rol", handlers.ValidarMiddleware(handlers.RolCrear, "RolCrear")).Methods("POST")
-	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioCrear, "UsuarioCrear")).Methods("POST")
+	router.HandleFunc("/permiso", handlers.ValidarMiddleware(handlers.PermisoCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/rol", handlers.ValidarMiddleware(handlers.RolCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioCrear, "NO_VALIDAR")).Methods("POST")
 
 	// Filosofos
 	// *********
