@@ -19,3 +19,10 @@ type Empresa struct {
 type IdModulo struct {
 	ID				bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
 }
+
+type InvitacionEmpresa struct {
+	Empresa		string		`json:"empresa"`
+	Modulos		[]IdModulo			`json:"modulos"`
+	Rol				string		`json:"rol"`
+	Mail			string		`json:"mail"`
+}

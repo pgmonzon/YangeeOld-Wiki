@@ -32,9 +32,3 @@ type Autorizacion struct {
 	Usuario		string		`json:"usuario"`
 	Menu			[]Opcion	`json:"menu"`
 }
-
-type InvitacionEmpresa struct {
-	Empresa		string		`json:"empresa"`
-	Rol				string		`json:"rol"`
-	Mail			string		`json:"mail"`
-}

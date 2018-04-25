@@ -168,3 +168,47 @@ func Empresa_X_ID(empresaID bson.ObjectId) (string, string, string, int, models.
   // Existe
   return "OK", "BuscarEmpresa", "Ok", http.StatusOK, empresa
 }
+/*
+func InvitacionEmpresa(w http.ResponseWriter, req *http.Request) {
+	var invitacionEmpresa models.InvitacionEmpresa
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&invitacionEmpresa)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Verifico los campos obligatorios
+  // ********************************
+  if invitacionEmpresa.Empresa == "" || invitacionEmpresa.Rol == "" || invitacionEmpresa.Mail == "" {
+    core.RspMsgJSON(w, req, "ERROR", "InvitacionEmpresa", "INVALID_PARAMS: empresa, rol y mail no pueden estar vacíos", http.StatusBadRequest)
+    return
+  }
+
+  // Doy de alta la empresa
+  // **********************
+  empresa.Empresa = invitacionEmpresa.Empresa
+  s := []string{invitacionEmpresa.Empresa, ".jpg"}
+  empresa.Logo = strings.Join(s, "")
+  empresa.Activo = true
+  estado, valor, mensaje, httpStat, empresa, _ := EmpresaAlta(empresa)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+  }
+
+  // Establezco las variables
+  // ************************
+  context.Set(req, "TipoOper", "#Novedad#")
+  context.Set(req, "Coleccion", config.DB_ClienteAPI)
+  context.Set(req, "Objeto_id", clienteAPI.ID)
+  context.Set(req, "Audit", clienteAPI)
+
+  // Está todo Ok
+  // ************
+  core.RspMsgJSON(w, req, "OK", clienteAPI.ClienteAPI, "Ok", http.StatusCreated)
+  return
+}
+*/

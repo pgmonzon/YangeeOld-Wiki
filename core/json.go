@@ -30,6 +30,10 @@ func RspMsgJSON(w http.ResponseWriter, req *http.Request, estado string, valor s
 
 func RspJSON(w http.ResponseWriter, req *http.Request, respuesta []byte, code int) {
   w.Header().Set("Content-Type", "application/json; charset=utf-8")
+  w.Header().Set("Access-Control-Allow-Origin", "*")
+  w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+  w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+  w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(code)
   if string(respuesta) != "" {
 		w.Write(respuesta)
