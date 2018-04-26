@@ -50,10 +50,20 @@ func TestOptionsBody(w http.ResponseWriter, req *http.Request) {
 }
 
 func TestPostHeader(w http.ResponseWriter, req *http.Request) {
-  var test models.Test
+  var api_clienteID models.API_Cliente
 
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&api_clienteID)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  var test models.Test
   test.Authorization = req.Header.Get("Authorization")
-  test.API_ClienteID = req.Header.Get("API_ClienteID")
+  test.API_ClienteID = api_clienteID.API_ClienteID
 
   // Está todo Ok
   // ************
@@ -64,10 +74,20 @@ func TestPostHeader(w http.ResponseWriter, req *http.Request) {
 }
 
 func TestOptionsHeader(w http.ResponseWriter, req *http.Request) {
-  var test models.Test
+  var api_clienteID models.API_Cliente
 
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&api_clienteID)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  var test models.Test
   test.Authorization = req.Header.Get("Authorization")
-  test.API_ClienteID = req.Header.Get("API_ClienteID")
+  test.API_ClienteID = api_clienteID.API_ClienteID
 
   // Está todo Ok
   // ************
@@ -78,10 +98,20 @@ func TestOptionsHeader(w http.ResponseWriter, req *http.Request) {
 }
 
 func Autorizar(w http.ResponseWriter, req *http.Request) {
+  var api_clienteID models.API_Cliente
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&api_clienteID)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
 
   // Valido el token del clienteAPI
   // ******************************
-  estado, valor, mensaje, httpStat, aut, usuario, empresa := ValidarTokenCliente(w, req)
+  estado, valor, mensaje, httpStat, aut, usuario, empresa := ValidarTokenCliente(w, req, api_clienteID)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return

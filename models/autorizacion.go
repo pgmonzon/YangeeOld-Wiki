@@ -38,3 +38,7 @@ type Test struct {
 	Authorization	string	`json:"authorization"`
 	API_ClienteID	string	`json:"api_clienteID"`
 }
+
+type API_Cliente struct {
+	API_ClienteID	string	`json:"api_clienteID"`
+}

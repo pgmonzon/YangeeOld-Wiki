@@ -18,7 +18,7 @@ import (
 )
 
 // Valida el token generado por el cliente API
-func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (string, string, string, int, models.AutorizarTokenCliente, models.Usuario, models.Empresa) {
+func ValidarTokenCliente(w http.ResponseWriter, req *http.Request, api_clienteID models.API_Cliente) (string, string, string, int, models.AutorizarTokenCliente, models.Usuario, models.Empresa) {
   var aut models.AutorizarTokenCliente
   var usuario models.Usuario
   var empresa models.Empresa
@@ -26,7 +26,7 @@ func ValidarTokenCliente(w http.ResponseWriter, req *http.Request) (string, stri
 
   // Busco la firma y la clave de encriptación que usa el cliente API
   // ****************************************************************
-  clienteAPI, err, httpStat := ClienteAPI_X_clienteAPI(req.Header.Get("API_ClienteID"))
+  clienteAPI, err, httpStat := ClienteAPI_X_clienteAPI(api_clienteID.API_ClienteID)
   if err != nil {
     return "ERROR", "ClienteAPI_X_clienteAPI", err.Error(), httpStat, aut, usuario, empresa
   }
