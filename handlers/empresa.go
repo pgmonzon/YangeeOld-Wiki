@@ -168,14 +168,14 @@ func Empresa_X_ID(empresaID bson.ObjectId) (string, string, string, int, models.
   // Existe
   return "OK", "BuscarEmpresa", "Ok", http.StatusOK, empresa
 }
-/*
-func InvitacionEmpresa(w http.ResponseWriter, req *http.Request) {
-	var invitacionEmpresa models.InvitacionEmpresa
+
+func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
+	var empresaInvitacion models.EmpresaInvitacion
 
   // Decode del JSON
   // ***************
   decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&invitacionEmpresa)
+  err := decoder.Decode(&empresaInvitacion)
   if err != nil {
     core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
     return
@@ -183,32 +183,68 @@ func InvitacionEmpresa(w http.ResponseWriter, req *http.Request) {
 
   // Verifico los campos obligatorios
   // ********************************
-  if invitacionEmpresa.Empresa == "" || invitacionEmpresa.Rol == "" || invitacionEmpresa.Mail == "" {
-    core.RspMsgJSON(w, req, "ERROR", "InvitacionEmpresa", "INVALID_PARAMS: empresa, rol y mail no pueden estar vacíos", http.StatusBadRequest)
+  if empresaInvitacion.Empresa == "" || empresaInvitacion.Rol == "" || empresaInvitacion.Mail == "" {
+    core.RspMsgJSON(w, req, "ERROR", "empresaInvitacion", "INVALID_PARAMS: empresa, rol y mail no pueden estar vacíos", http.StatusBadRequest)
     return
   }
 
   // Doy de alta la empresa
   // **********************
-  empresa.Empresa = invitacionEmpresa.Empresa
-  s := []string{invitacionEmpresa.Empresa, ".jpg"}
+  var empresa models.Empresa
+  empresa.Empresa = empresaInvitacion.Empresa
+  s := []string{empresaInvitacion.Empresa, ".jpg"}
   empresa.Logo = strings.Join(s, "")
+  empresa.Modulos = empresaInvitacion.Modulos
   empresa.Activo = true
-  estado, valor, mensaje, httpStat, empresa, _ := EmpresaAlta(empresa)
-  if httpStat != http.StatusOK {
+  estado, valor, mensaje, httpStat, empresa, existia := EmpresaAlta(empresa, req)
+  if httpStat != http.StatusOK && existia == false {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
   }
 
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Novedad#")
-  context.Set(req, "Coleccion", config.DB_ClienteAPI)
-  context.Set(req, "Objeto_id", clienteAPI.ID)
-  context.Set(req, "Audit", clienteAPI)
-
+  // Doy de alta el Rol con los permisos de los módulos
+  // **************************************************
+  estado, valor, mensaje, httpStat, permisosID := ModulosPermisos(empresaInvitacion.Modulos)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  var rol models.Rol
+  rol.Rol = empresaInvitacion.Rol
+  rol.Empresa_id = empresa.ID
+  rol.Permisos = permisosID
+  rol.Activo = true
+  estado, valor, mensaje, httpStat, rol, existia = RolAlta(rol, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+/*
+  // Doy de alta el usuario
+  // **********************
+  var usuario models.Usuario
+  usuario.Usuario = strconv.FormatInt(rand.Int63(), 10)
+  usuario.Clave = strconv.FormatInt(rand.Int63(), 10)
+  usuario.Mail = empresaInvitacion.Mail
+  usuario.Apellido = ""
+  usuario.Nombre = ""
+  usuario.Empresa_id = empresa.ID
+  usuario.Activo = true
+  var roles []models.IdRol
+  roles = append(roles, rol)
+  usuario.Roles = roles
+  estado, valor, mensaje, httpStat, usuario, existia = UsuarioAlta(usuario, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+*/
   // Está todo Ok
   // ************
-  core.RspMsgJSON(w, req, "OK", clienteAPI.ClienteAPI, "Ok", http.StatusCreated)
+  core.RspMsgJSON(w, req, "OK", "Invitación Empresa", "Ok", http.StatusCreated)
   return
 }
-*/

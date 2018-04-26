@@ -13,3 +13,11 @@ type Modulo struct {
   Borrado   bool          	`json:"borrado,omitempty"`
 	Timestamp	time.Time				`json:"timestamp, omitempty"`
 }
+
+type Modulos struct {
+	Modulos		[]Modulo				`json:"modulos"`
+}
+
+type IdModulo struct {
+	ID				bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
+}

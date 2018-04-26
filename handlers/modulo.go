@@ -92,7 +92,7 @@ func ModuloAlta(moduloAlta models.Modulo, req *http.Request) (string, string, st
   return "OK", "ModuloAlta", "Ok", http.StatusOK, modulo, false
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Modulo, Existía
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func ModuloExiste(moduloExiste string) (string, string, string, int, models.Modulo, bool) {
   var modulo models.Modulo
 
@@ -140,4 +140,63 @@ func ModuloExiste(moduloExiste string) (string, string, string, int, models.Modu
   // Existe
   s := []string{"INVALID_PARAMS: El módulo ", moduloExiste," ya existe"}
   return "ERROR", "BuscarModulo", strings.Join(s, ""), http.StatusBadRequest, modulo, true
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
+func Modulo_X_ID(moduloID bson.ObjectId) (string, string, string, int, models.Modulo) {
+  var modulo models.Modulo
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, modulo
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(config.DB_Modulo)
+  collection.Find(bson.M{"_id": moduloID}).One(&modulo)
+  // No existe
+  if modulo.ID == "" {
+    s := []string{"INVALID_PARAMS: El módulo no existe"}
+    return "ERROR", "Buscar Módulo", strings.Join(s, ""), http.StatusBadRequest, modulo
+  }
+  // Existe
+  return "OK", "Buscar Módulo", "Ok", http.StatusOK, modulo
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
+func ModulosPermisos(modulosID []models.IdModulo) (string, string, string, int, []models.IdPermiso) {
+  permisosID := make([]models.IdPermiso, 0)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, permisosID
+  }
+  defer session.Close()
+
+  // recorro los módulos
+  // *******************
+  modulosArr := []bson.ObjectId{}
+  for _, itemMod := range modulosID {
+    if itemMod.ID != "" {
+      _, _, _, httpStat, modulo := Modulo_X_ID(itemMod.ID)
+      if httpStat == http.StatusOK && modulo.Activo == true && modulo.Borrado == false {
+        modulosArr = append(modulosArr, itemMod.ID)
+      }
+    }
+  }
+
+  // Traigo los permisos pertenecientes a los módulos
+  // ************************************************
+  collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+  collection.Find(bson.M{"modulo_id": bson.M{"$in": modulosArr}, "activo": true, "borrado": false}).Select(bson.M{"_id": 1}).All(&permisosID)
+
+  // Está todo Ok
+  // ************
+  return "OK", "ModulosPermisos", "Ok", http.StatusOK, permisosID
 }

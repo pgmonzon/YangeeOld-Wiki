@@ -16,11 +16,7 @@ type Empresa struct {
 	Timestamp	time.Time				`json:"timestamp, omitempty"`
 }
 
-type IdModulo struct {
-	ID				bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
-}
-
-type InvitacionEmpresa struct {
+type EmpresaInvitacion struct {
 	Empresa		string		`json:"empresa"`
 	Modulos		[]IdModulo			`json:"modulos"`
 	Rol				string		`json:"rol"`
