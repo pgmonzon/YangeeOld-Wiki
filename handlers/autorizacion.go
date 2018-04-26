@@ -53,7 +53,7 @@ func TestPostHeader(w http.ResponseWriter, req *http.Request) {
   var test models.Test
 
   test.Authorization = req.Header.Get("Authorization")
-  test.API_ClienteID = req.Header.Get("Connection")
+  test.API_ClienteID = req.Header.Get("API_ClienteID")
 
   // Está todo Ok
   // ************
@@ -67,7 +67,7 @@ func TestOptionsHeader(w http.ResponseWriter, req *http.Request) {
   var test models.Test
 
   test.Authorization = req.Header.Get("Authorization")
-  test.API_ClienteID = req.Header.Get("Connection")
+  test.API_ClienteID = req.Header.Get("API_ClienteID")
 
   // Está todo Ok
   // ************
