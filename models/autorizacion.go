@@ -32,3 +32,9 @@ type Autorizacion struct {
 	Usuario		string		`json:"usuario"`
 	Menu			[]Opcion	`json:"menu"`
 }
+
+type Test struct {
+	Metodo				string	`json:"metodo,omitempty"`
+	Authorization	string	`json:"authorization"`
+	API_ClienteID	string	`json:"api_clienteID"`
+}

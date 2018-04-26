@@ -9,6 +9,73 @@ import (
   "github.com/pgmonzon/Yangee/models"
 )
 
+func TestPostBody(w http.ResponseWriter, req *http.Request) {
+  var test models.Test
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&test)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  test.Metodo = "TestPostBody"
+  respuesta, _ := json.Marshal(test)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func TestOptionsBody(w http.ResponseWriter, req *http.Request) {
+  var test models.Test
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&test)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  test.Metodo = "TestOptionsBody"
+  respuesta, _ := json.Marshal(test)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func TestPostHeader(w http.ResponseWriter, req *http.Request) {
+  var test models.Test
+
+  test.Authorization = req.Header.Get("Authorization")
+  test.API_ClienteID = req.Header.Get("API_ClienteID")
+
+  // Está todo Ok
+  // ************
+  test.Metodo = "TestPostHeader"
+  respuesta, _ := json.Marshal(test)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func TestOptionsHeader(w http.ResponseWriter, req *http.Request) {
+  var test models.Test
+
+  test.Authorization = req.Header.Get("Authorization")
+  test.API_ClienteID = req.Header.Get("API_ClienteID")
+
+  // Está todo Ok
+  // ************
+  test.Metodo = "TestOptionsHeader"
+  respuesta, _ := json.Marshal(test)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
 
 func Autorizar(w http.ResponseWriter, req *http.Request) {
 
