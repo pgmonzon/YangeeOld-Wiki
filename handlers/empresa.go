@@ -5,6 +5,8 @@ import (
   "net/http"
   "strings"
   "time"
+  //"strconv"
+  //"math/rand"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -231,7 +233,7 @@ func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
   usuario.Empresa_id = empresa.ID
   usuario.Activo = true
   var roles []models.IdRol
-  roles = append(roles, rol)
+  roles = append(roles, rol.ID)
   usuario.Roles = roles
   estado, valor, mensaje, httpStat, usuario, existia = UsuarioAlta(usuario, req)
   if httpStat != http.StatusOK {

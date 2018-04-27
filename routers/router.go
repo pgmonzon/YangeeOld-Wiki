@@ -6,6 +6,7 @@ import (
 
   "github.com/pgmonzon/Yangee/handlers"
 
+	gorillaHnd "github.com/gorilla/handlers"
   "github.com/gorilla/mux"
 )
 
@@ -45,5 +46,8 @@ func InicializarRutas() {
 	router.HandleFunc("/filosofosSiguiente/{orden}/{limite}/{ultimo_campo_orden}", handlers.ValidarMiddleware(handlers.FilosofosTraerSiguiente, "FilosofosTraerSiguiente")).Methods("POST")
 	router.HandleFunc("/filosofosAnterior/{orden}/{limite}/{primer_campo_orden}", handlers.ValidarMiddleware(handlers.FilosofosTraerAnterior, "FilosofosTraerAnterior")).Methods("POST")
 
-	log.Fatal(http.ListenAndServe(":3113", router))
+	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
+	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
+	log.Fatal(http.ListenAndServe(":3113", gorillaHnd.CORS(allowedOrigins, allowedMethods)(router)))
+	//log.Fatal(http.ListenAndServe(":3113", router))
 }

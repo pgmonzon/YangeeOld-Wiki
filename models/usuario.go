@@ -21,10 +21,6 @@ type Usuario struct {
 	Timestamp		time.Time				`json:"timestamp, omitempty"`
 }
 
-type IdRol struct {
-	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
-}
-
 type Opcion struct {
 	Opcion			string					`json:"opcion"`
 	Sub					[]Sub						`json:"sub,omitempty"`

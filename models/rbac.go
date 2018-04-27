@@ -25,6 +25,10 @@ type Rol struct {
 	Timestamp		time.Time				`json:"timestamp, omitempty"`
 }
 
+type IdRol struct {
+	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
+}
+
 type IdPermiso struct {
 	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
 }
