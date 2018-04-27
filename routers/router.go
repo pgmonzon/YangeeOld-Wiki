@@ -48,6 +48,7 @@ func InicializarRutas() {
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
-	log.Fatal(http.ListenAndServe(":3113", gorillaHnd.CORS(allowedOrigins, allowedMethods)(router)))
+	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
+	log.Fatal(http.ListenAndServe(":3113", gorillaHnd.CORS(allowedOrigins, allowedMethods, allowedHeaders)(router)))
 	//log.Fatal(http.ListenAndServe(":3113", router))
 }

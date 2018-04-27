@@ -232,9 +232,13 @@ func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
   usuario.Nombre = ""
   usuario.Empresa_id = empresa.ID
   usuario.Activo = true
-  var roles []models.IdRol
-  roles = append(roles, rol.ID)
-  usuario.Roles = roles
+  //rolesID := make([]models.IdRol, 0)
+  //rolesID := []bson.ObjectId{}
+  var rolesID []models.IdRol
+  rolesID = append(rolesID, rol.ID)
+  //var roles []models.IdRol
+  //roles = append(roles, rol.ID)
+  usuario.Roles = rolesID
   estado, valor, mensaje, httpStat, usuario, existia = UsuarioAlta(usuario, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
