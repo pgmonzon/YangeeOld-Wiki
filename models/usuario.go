@@ -22,10 +22,15 @@ type Usuario struct {
 }
 
 type Opcion struct {
-	Opcion			string					`json:"opcion"`
-	Sub					[]Sub						`json:"sub,omitempty"`
+	Path				string					`json:"path"`
+	Title				string					`json:"title"`
+	Icontype		string					`json:"icontype"`
+	Collapse		string					`json:"collapse, omitempty"`
+	Children		[]Sub						`json:"children,omitempty"`
 }
 
 type Sub struct {
-	Opcion		string					`json:"opcion"`
+	Path				string					`json:"path"`
+	Title				string					`json:"title"`
+	Ab					string					`json:"ab"`
 }

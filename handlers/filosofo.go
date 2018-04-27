@@ -17,8 +17,144 @@ import (
   "github.com/gorilla/context"
   "github.com/gorilla/mux"
 )
-
+/*
 func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
+	var documento models.Filosofo
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documento)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Doy de alta
+  // ***********
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documento, existia := FilosofoAlta(documento, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //----------------------------------Modificar ######
+  s := []string{"Agregaste", documento.Filosofo}
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusCreated)
+  return
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
+func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request) (string, string, string, int, models.Filosofo, bool) {
+	var documento models.Filosofo
+  camposVacios := "no podés dejar vacío el campo Filósofo"
+  coll := config.DB_Filosofo
+
+  // Verifico los campos obligatorios
+  // ********************************
+  //---------------Modificar ######
+  if documentoAlta.Filosofo == "" {
+    s := []string{"INVALID_PARAMS: ", camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest, documento, false
+  }
+
+  // Me fijo si ya Existe
+  // ********************
+  //-----------------------------------------------------Modificar ######--------------Modificar ######
+  estado, valor, mensaje, httpStat, documento, existia := FilosofoExiste(documentoAlta.Filosofo)
+  if httpStat != http.StatusOK || existia == true {
+    return estado, valor, mensaje, httpStat, documento, existia
+  }
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento, false
+  }
+  defer session.Close()
+
+  // Intento el alta
+  // ***************
+  documento = documentoAlta
+  objID := bson.NewObjectId()
+  documento.ID = objID
+  documento.Timestamp = time.Now()
+  documento.Borrado = false
+  collection := session.DB(config.DB_Name).C(coll)
+  err = collection.Insert(documento)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "Insert", strings.Join(s, ""), http.StatusInternalServerError, documento, false
+  }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, coll, documento.ID, "Alta", documento)
+  return "OK", "Alta", "Ok", http.StatusOK, documento, false
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
+func FilosofoExiste(documentoExiste string) (string, string, string, int, models.Filosofo, bool) {
+  var documento models.Filosofo
+  indice := []string{"filosofo"}
+  coll := config.DB_Filosofo
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento, false
+  }
+  defer session.Close()
+
+  // Me aseguro el índice
+  // ********************
+  collection := session.DB(config.DB_Name).C(coll)
+  index := mgo.Index{
+    Key:        indice,
+    Unique:     true,
+    DropDups:   false,
+    Background: true,
+    Sparse:     true,
+  }
+  err = collection.EnsureIndex(index)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "EnsureIndex", strings.Join(s, ""), http.StatusInternalServerError, documento, false
+  }
+
+  // Verifico si Existe
+  // ******************
+  //---------------------Modificar ######
+  collection.Find(bson.M{"filosofo": documentoExiste}).One(&documento)
+  // No existe
+  if documento.ID == "" {
+    return "OK", "Buscar", "Ok", http.StatusOK, documento, false
+  }
+  // Existe borrado
+  if documento.Borrado == true {
+    s := []string{"INVALID_PARAMS: ", documentoExiste," existe borrado"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+  }
+  // Existe inactivo
+  if documento.Activo == false {
+    s := []string{"INVALID_PARAMS: ", documentoExiste," existe inactivo"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+  }
+  // Existe
+  s := []string{"INVALID_PARAMS: ", documentoExiste," ya existe"}
+  return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+}
+*/
+func xFilosofoCrear(w http.ResponseWriter, req *http.Request) {
 	var filosofo models.Filosofo
 
   // Decode del JSON
@@ -82,7 +218,7 @@ func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func FilosofoModificar(w http.ResponseWriter, req *http.Request) {
+func xFilosofoModificar(w http.ResponseWriter, req *http.Request) {
 	var filosofo models.Filosofo
 
   // Verifico el formato del campo ID
@@ -162,7 +298,7 @@ func FilosofoModificar(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func FilosofoBorrar(w http.ResponseWriter, req *http.Request) {
+func xFilosofoBorrar(w http.ResponseWriter, req *http.Request) {
 
   // Verifico el formato del campo ID
   // ********************************
@@ -222,7 +358,7 @@ func FilosofoBorrar(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func FilosofoTraer(w http.ResponseWriter, req *http.Request) {
+func xFilosofoTraer(w http.ResponseWriter, req *http.Request) {
 
   // Verifico el formato del campo ID
   // ********************************
@@ -258,7 +394,7 @@ func FilosofoTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
+func xFilosofosTraer(w http.ResponseWriter, req *http.Request) {
   var filosofo models.Filosofo
   var filosofos []models.Filosofo
   vars := mux.Vars(req)
@@ -335,7 +471,7 @@ func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-func FilosofosTraerSiguiente(w http.ResponseWriter, req *http.Request) {
+func xFilosofosTraerSiguiente(w http.ResponseWriter, req *http.Request) {
   var filosofo models.Filosofo
   var filosofos []models.Filosofo
   vars := mux.Vars(req)
