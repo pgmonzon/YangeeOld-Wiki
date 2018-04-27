@@ -5,8 +5,8 @@ import (
   "net/http"
   "strings"
   "time"
-  //"strconv"
-  //"math/rand"
+  "strconv"
+  "math/rand"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -217,11 +217,25 @@ func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
   rol.Permisos = permisosID
   rol.Activo = true
   estado, valor, mensaje, httpStat, rol, existia = RolAlta(rol, req)
-  if httpStat != http.StatusOK {
+  if httpStat != http.StatusOK && existia == false {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-/*
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "GetMongoSession", err.Error(), httpStat)
+  }
+  defer session.Close()
+
+  // Traigo el rol
+  // *************
+  rolesID := make([]models.IdRol, 0)
+  collection := session.DB(config.DB_Name).C(config.DB_Rol)
+  collection.Find(bson.M{"_id": rol.ID}).Select(bson.M{"_id": 1}).All(&rolesID)
+
   // Doy de alta el usuario
   // **********************
   var usuario models.Usuario
@@ -232,23 +246,13 @@ func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
   usuario.Nombre = ""
   usuario.Empresa_id = empresa.ID
   usuario.Activo = true
-  //rolesID := make([]models.IdRol, 0)
-  //rolesID := []bson.ObjectId{}
-  var rolesID []models.IdRol
-  rolesID = append(rolesID, rol.ID)
-  //var roles []models.IdRol
-  //roles = append(roles, rol.ID)
   usuario.Roles = rolesID
   estado, valor, mensaje, httpStat, usuario, existia = UsuarioAlta(usuario, req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-  if existia {
-    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
-    return
-  }
-*/
+
   // Está todo Ok
   // ************
   core.RspMsgJSON(w, req, "OK", "Invitación Empresa", "Ok", http.StatusCreated)
