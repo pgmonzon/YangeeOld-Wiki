@@ -23,6 +23,7 @@ type Usuario struct {
 
 type Opcion struct {
 	Path				string					`json:"path"`
+	Type				string					`json:"type"`
 	Title				string					`json:"title"`
 	Icontype		string					`json:"icontype"`
 	Collapse		string					`json:"collapse, omitempty"`
