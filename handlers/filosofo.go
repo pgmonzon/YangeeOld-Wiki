@@ -3,9 +3,9 @@ package handlers
 import (
   "encoding/json"
   "net/http"
-  "fmt"
+  //"fmt"
   "strings"
-  "strconv"
+  //"strconv"
   "time"
 
   "github.com/pgmonzon/Yangee/models"
@@ -15,11 +15,13 @@ import (
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
   "github.com/gorilla/context"
-  "github.com/gorilla/mux"
+  //"github.com/gorilla/mux"
 )
-/*
+
 func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
 	var documento models.Filosofo
+  audit := "Crear"
 
   // Decode del JSON
   // ***************
@@ -33,7 +35,7 @@ func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
   // Doy de alta
   // ***********
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := FilosofoAlta(documento, req)
+  estado, valor, mensaje, httpStat, documento, existia := FilosofoAlta(documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -45,17 +47,20 @@ func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //----------------------------------Modificar ######
-  s := []string{"Agregaste", documento.Filosofo}
+  //------------------------------------Modificar ######
+  s := []string{"Agregaste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
   core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusCreated)
   return
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request) (string, string, string, int, models.Filosofo, bool) {
+func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request, audit string) (string, string, string, int, models.Filosofo, bool) {
+  //-------------------Modificar ###### las 4 variables
 	var documento models.Filosofo
   camposVacios := "no podés dejar vacío el campo Filósofo"
   coll := config.DB_Filosofo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico los campos obligatorios
   // ********************************
@@ -68,7 +73,7 @@ func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request) (string, str
   // Me fijo si ya Existe
   // ********************
   //-----------------------------------------------------Modificar ######--------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := FilosofoExiste(documentoAlta.Filosofo)
+  estado, valor, mensaje, httpStat, documento, existia := FilosofoExiste(documentoAlta.Filosofo, req)
   if httpStat != http.StatusOK || existia == true {
     return estado, valor, mensaje, httpStat, documento, existia
   }
@@ -86,6 +91,7 @@ func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request) (string, str
   documento = documentoAlta
   objID := bson.NewObjectId()
   documento.ID = objID
+  documento.Empresa_id = empresaID
   documento.Timestamp = time.Now()
   documento.Borrado = false
   collection := session.DB(config.DB_Name).C(coll)
@@ -97,15 +103,17 @@ func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request) (string, str
 
   // Está todo Ok
   // ************
-  core.Audit(req, coll, documento.ID, "Alta", documento)
-  return "OK", "Alta", "Ok", http.StatusOK, documento, false
+  core.Audit(req, coll, documento.ID, audit, documento)
+  return "OK", audit, "Ok", http.StatusOK, documento, false
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func FilosofoExiste(documentoExiste string) (string, string, string, int, models.Filosofo, bool) {
+func FilosofoExiste(documentoExiste string, req *http.Request) (string, string, string, int, models.Filosofo, bool) {
+  //-------------------Modificar ###### las 4 variables
   var documento models.Filosofo
-  indice := []string{"filosofo"}
+  indice := []string{"empresa_id", "filosofo"}
   coll := config.DB_Filosofo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
   // *****************************
@@ -133,8 +141,8 @@ func FilosofoExiste(documentoExiste string) (string, string, string, int, models
 
   // Verifico si Existe
   // ******************
-  //---------------------Modificar ######
-  collection.Find(bson.M{"filosofo": documentoExiste}).One(&documento)
+  //----------------------------------------------Modificar ######
+  collection.Find(bson.M{"empresa_id": empresaID, "filosofo": documentoExiste}).One(&documento)
   // No existe
   if documento.ID == "" {
     return "OK", "Buscar", "Ok", http.StatusOK, documento, false
@@ -153,7 +161,7 @@ func FilosofoExiste(documentoExiste string) (string, string, string, int, models
   s := []string{"INVALID_PARAMS: ", documentoExiste," ya existe"}
   return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
 }
-*/
+/*
 func xFilosofoCrear(w http.ResponseWriter, req *http.Request) {
 	var filosofo models.Filosofo
 
@@ -731,3 +739,4 @@ func Filosofo_X_ID(filosofoID bson.ObjectId) (models.Filosofo, error, int) {
   // ******
   return filosofo, nil, http.StatusOK
 }
+*/

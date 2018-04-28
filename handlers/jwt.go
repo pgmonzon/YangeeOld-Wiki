@@ -147,9 +147,9 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     context.Set(req, "Empresa_id", objID)
     context.Set(req, "Empresa", "")
 
-    // Si es NO_VALIDAR redirecciono directamente
-    // ******************************************************
-    if permiso == "NO_VALIDAR" {
+    // Si es AUTH redirecciono
+    // ***********************
+    if permiso == "AUTH" {
       next(w, req)
       return
     }
@@ -199,6 +199,13 @@ func ValidarMiddleware(next http.HandlerFunc, permiso string) http.HandlerFunc {
     if claims.ExpiresAt < time.Now().Unix() {
       s := []string{"FORBIDDEN: ", "Token Expirado"}
       core.RspMsgJSON(w, req, "ERROR", "Token Expirado", strings.Join(s, ""), http.StatusForbidden)
+      return
+    }
+
+    // Si es NO_VALIDAR redirecciono
+    // *****************************
+    if permiso == "NO_VALIDAR" {
+      next(w, req)
       return
     }
 
