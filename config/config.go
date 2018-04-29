@@ -33,6 +33,7 @@ const(
   DB_Permiso = "permisos" // tabla de permisos
   DB_Rol = "roles" // tabla de roles
   DB_Filosofo = "filosofos"
+  DB_TipoUnidad = "tipoUnidad"
 
   // jwt
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"

@@ -39,13 +39,24 @@ func InicializarRutas() {
 	// Filosofos
 	// *********
 	router.HandleFunc("/filosofo", handlers.ValidarMiddleware(handlers.FilosofoCrear, "NO_VALIDAR")).Methods("POST")
-	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoGuardar, "NO_VALIDAR")).Methods("PUT")
-	router.HandleFunc("/filosofoHabilitar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoHabilitar, "NO_VALIDAR")).Methods("PUT")
-	router.HandleFunc("/filosofoDeshabilitar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoDeshabilitar, "NO_VALIDAR")).Methods("PUT")
-	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoBorrar, "NO_VALIDAR")).Methods("DELETE")
-	router.HandleFunc("/filosofoRecuperar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoRecuperar, "NO_VALIDAR")).Methods("GET")
-	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/filosofo/{docID}", handlers.ValidarMiddleware(handlers.FilosofoGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/filosofoHabilitar/{docID}", handlers.ValidarMiddleware(handlers.FilosofoHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/filosofoDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.FilosofoDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/filosofo/{docID}", handlers.ValidarMiddleware(handlers.FilosofoBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/filosofoRecuperar/{docID}", handlers.ValidarMiddleware(handlers.FilosofoRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/filosofo/{docID}", handlers.ValidarMiddleware(handlers.FilosofoTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/filosofos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.FilosofosTraer, "NO_VALIDAR")).Methods("POST")
+
+	// TiposUnidades
+	// *************
+	router.HandleFunc("/tipoUnidad", handlers.ValidarMiddleware(handlers.TipoUnidadCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/tipoUnidad/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/tipoUnidadHabilitar/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/tipoUnidadDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/tipoUnidad/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/tipoUnidadRecuperar/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/tipoUnidad/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/tipoUnidades/{orden}/{limite}", handlers.ValidarMiddleware(handlers.TipoUnidadesTraer, "NO_VALIDAR")).Methods("POST")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
