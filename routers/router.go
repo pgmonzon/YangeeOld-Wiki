@@ -40,11 +40,12 @@ func InicializarRutas() {
 	// *********
 	router.HandleFunc("/filosofo", handlers.ValidarMiddleware(handlers.FilosofoCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoGuardar, "NO_VALIDAR")).Methods("PUT")
-	//router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoBorrar, "FilosofoBorrar")).Methods("DELETE")
+	router.HandleFunc("/filosofoHabilitar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/filosofoDeshabilitar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/filosofoRecuperar/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoRecuperar, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/filosofo/{filosofoID}", handlers.ValidarMiddleware(handlers.FilosofoTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/filosofos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.FilosofosTraer, "NO_VALIDAR")).Methods("POST")
-	//router.HandleFunc("/filosofosSiguiente/{orden}/{limite}/{ultimo_campo_orden}", handlers.ValidarMiddleware(handlers.FilosofosTraerSiguiente, "FilosofosTraerSiguiente")).Methods("POST")
-	//router.HandleFunc("/filosofosAnterior/{orden}/{limite}/{primer_campo_orden}", handlers.ValidarMiddleware(handlers.FilosofosTraerAnterior, "FilosofosTraerAnterior")).Methods("POST")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})

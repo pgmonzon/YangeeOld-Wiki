@@ -359,9 +359,201 @@ func FilosofoGuardar(w http.ResponseWriter, req *http.Request) {
   return
 }
 
+func FilosofoHabilitar(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
+  var documento models.Filosofo
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
+  audit := "Habilitar"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco para obtener los campos faltantes
+  // ***************************************
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  //-------Modificar ###### todo el bloque
+  documento.Filosofo = documentoExistente.Filosofo
+  documento.Doctrina = documentoExistente.Doctrina
+  documento.Biografia = documentoExistente.Biografia
+  documento.Activo = true
+  documento.Borrado = documentoExistente.Borrado
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat = FilosofoModificar(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Habilitaste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
+func FilosofoDeshabilitar(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
+  var documento models.Filosofo
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
+  audit := "Deshabilitar"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco para obtener los campos faltantes
+  // ***************************************
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  //-------Modificar ###### todo el bloque
+  documento.Filosofo = documentoExistente.Filosofo
+  documento.Doctrina = documentoExistente.Doctrina
+  documento.Biografia = documentoExistente.Biografia
+  documento.Activo = false
+  documento.Borrado = documentoExistente.Borrado
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat = FilosofoModificar(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Deshabilitaste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
+func FilosofoBorrar(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
+  var documento models.Filosofo
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
+  audit := "Borrar"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco para obtener los campos faltantes
+  // ***************************************
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  //-------Modificar ###### todo el bloque
+  documento.Filosofo = documentoExistente.Filosofo
+  documento.Doctrina = documentoExistente.Doctrina
+  documento.Biografia = documentoExistente.Biografia
+  documento.Activo = documentoExistente.Activo
+  documento.Borrado = true
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat = FilosofoModificar(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Borraste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
+func FilosofoRecuperar(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
+  var documento models.Filosofo
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
+  audit := "Recuperar"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco para obtener los campos faltantes
+  // ***************************************
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  //-------Modificar ###### todo el bloque
+  documento.Filosofo = documentoExistente.Filosofo
+  documento.Doctrina = documentoExistente.Doctrina
+  documento.Biografia = documentoExistente.Biografia
+  documento.Activo = documentoExistente.Activo
+  documento.Borrado = false
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat = FilosofoModificar(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Recuperaste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo, req *http.Request, audit string) (string, string, string, int) {
-  //-------------------Modificar ###### las 3 variables
+  //-------------------Modificar ###### las 2 variables
   camposVacios := "no podés dejar vacío el campo Filósofo"
   coll := config.DB_Filosofo
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
@@ -395,7 +587,7 @@ func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo,
 
   // Intento la modificación
   // ***********************
-  //-------------------Modificar ######
+  //-------------------Modificar ###### todo el bloque
   documentoModi.ID = documentoID
   documentoModi.Empresa_id = empresaID
   collection := session.DB(config.DB_Name).C(coll)
