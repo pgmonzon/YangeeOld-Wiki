@@ -3,7 +3,6 @@ package handlers
 import (
   "encoding/json"
   "net/http"
-  //"fmt"
   "strings"
   "strconv"
   "time"
@@ -190,7 +189,7 @@ func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
   // Busco
   // *****
   //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentos := FilosofosBuscar(documento, orden, limiteInt, false, "Buscar")
+  estado, valor, mensaje, httpStat, documentos := FilosofosBuscar(documento, orden, limiteInt, false, "Buscar", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -205,10 +204,11 @@ func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection
-func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, borrados bool, audit string) (string, string, string, int, []models.Filosofo) {
+func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, borrados bool, audit string, req *http.Request) (string, string, string, int, []models.Filosofo) {
   //----------------------Modificar ###### estas 2 variables
   var documentos []models.Filosofo
   coll := config.DB_Filosofo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico que el campo orden sea Unique
   // **************************************
@@ -230,6 +230,7 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
   // *****************
   //----------Modificar ######
   selector := bson.M{
+    "empresa_id": empresaID,
     "filosofo": bson.M{"$regex": bson.RegEx{documento.Filosofo, "i"}},
     "doctrina": bson.M{"$regex": bson.RegEx{documento.Doctrina, "i"}},
     "biografia": bson.M{"$regex": bson.RegEx{documento.Biografia, "i"}},
@@ -266,7 +267,7 @@ func FilosofoTraer(w http.ResponseWriter, req *http.Request) {
   // Busco
   // *****
   //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documento := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -281,10 +282,11 @@ func FilosofoTraer(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, collection
-func Filosofo_X_ID(documentoID bson.ObjectId, audit string) (string, string, string, int, models.Filosofo) {
+func Filosofo_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.Filosofo) {
   //-------------------Modificar ######
   var documento models.Filosofo
   coll := config.DB_Filosofo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
   // *****************************
@@ -297,7 +299,7 @@ func Filosofo_X_ID(documentoID bson.ObjectId, audit string) (string, string, str
   // Trato de traerlo
   // ****************
   collection := session.DB(config.DB_Name).C(coll)
-  collection.Find(bson.M{"_id": documentoID}).Select(bson.M{"empresa_id":0}).One(&documento)
+  collection.Find(bson.M{"_id": documentoID, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
   // No existe
   if documento.ID == "" {
     s := []string{"INVALID_PARAMS: No encuentro el documento"}
@@ -334,7 +336,7 @@ func FilosofoGuardar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -377,7 +379,7 @@ func FilosofoHabilitar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -425,7 +427,7 @@ func FilosofoDeshabilitar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -473,7 +475,7 @@ func FilosofoBorrar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -521,7 +523,7 @@ func FilosofoRecuperar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -591,7 +593,7 @@ func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo,
   documentoModi.ID = documentoID
   documentoModi.Empresa_id = empresaID
   collection := session.DB(config.DB_Name).C(coll)
-  selector := bson.M{"_id": documentoID}
+  selector := bson.M{"_id": documentoID, "empresa_id": empresaID}
   updator := bson.M{
     "$set": bson.M{
       "filosofo": documentoModi.Filosofo,
