@@ -204,6 +204,7 @@ func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
 func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, borrados bool, audit string) (string, string, string, int, []models.Filosofo) {
   //----------------------Modificar ###### estas 2 variables
   var documentos []models.Filosofo
@@ -235,7 +236,7 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
     "borrado": borrados,
   }
   collection := session.DB(config.DB_Name).C(coll)
-  collection.Find(selector).Sort(orden).Limit(limiteInt).All(&documentos)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).Sort(orden).Limit(limiteInt).All(&documentos)
 
   // Si el resultado es vacío devuelvo ERROR
   // ***************************************
@@ -249,483 +250,174 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
   return "OK", audit, "Ok", http.StatusOK, documentos
 }
 
-/*
-func xFilosofoModificar(w http.ResponseWriter, req *http.Request) {
-	var filosofo models.Filosofo
+func FilosofoTraer(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ######
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
 
   // Verifico el formato del campo ID
   // ********************************
-  vars := mux.Vars(req)
-  if bson.IsObjectIdHex(vars["filosofoID"]) != true {
-    core.RspMsgJSON(w, req, "ERROR", "filosofoID", "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
     return
   }
-  filosofoID := bson.ObjectIdHex(vars["filosofoID"])
+  documentoID := bson.ObjectIdHex(ID)
 
-  // Decode del JSON
-  // ***************
-  decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&filosofo)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+  // Busco
+  // *****
+  //----------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documento := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-
-  // Verifico los campos obligatorios
-  // ********************************
-  if filosofo.Filosofo == "" {
-    core.RspMsgJSON(w, req, "ERROR", "Filósofo", "INVALID_PARAMS: Filósofo no puede estar vacío", http.StatusBadRequest)
-    return
-  }
-
-  // Me fijo si ya Existe
-  // ********************
-  err, httpStat := FilosofoExiste(filosofo.Filosofo, vars["filosofoID"])
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", filosofo.Filosofo, err.Error(), httpStat)
-    return
-  }
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "MongoSession", err.Error(), httpStat)
-    return
-  }
-  defer session.Close()
-
-  // Intento la modificación
-  // ***********************
-  filosofo.ID = filosofoID
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  selector := bson.M{"_id": filosofo.ID}
-  updator := bson.M{
-    "$set": bson.M{
-      "filosofo": filosofo.Filosofo,
-      "doctrina": filosofo.Doctrina,
-      "biografia": filosofo.Biografia,
-      "activo": filosofo.Activo,
-      "timestamp": time.Now(),
-    },
-  }
-  err = collection.Update(selector, updator)
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    core.RspMsgJSON(w, req, "ERROR", filosofo.Filosofo, strings.Join(s, ""), http.StatusInternalServerError)
-    return
-  }
-
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Novedad#")
-  context.Set(req, "Coleccion", config.DB_Filosofo)
-  context.Set(req, "Objeto_id", filosofo.ID)
-  context.Set(req, "Audit", filosofo)
 
   // Está todo Ok
   // ************
-  s := []string{"Modificó el filósofo ", filosofo.Filosofo}
-  core.RspMsgJSON(w, req, "OK", filosofo.Filosofo, strings.Join(s, ""), http.StatusAccepted)
-  return
-}
-
-func xFilosofoBorrar(w http.ResponseWriter, req *http.Request) {
-
-  // Verifico el formato del campo ID
-  // ********************************
-  vars := mux.Vars(req)
-  if bson.IsObjectIdHex(vars["filosofoID"]) != true {
-    core.RspMsgJSON(w, req, "ERROR", "filosofoID", "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
-    return
-  }
-  filosofoID := bson.ObjectIdHex(vars["filosofoID"])
-
-  // Traigo los datos
-  // ****************
-  filosofo, err, httpStat := Filosofo_X_ID(filosofoID)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", vars["filosofoID"], err.Error(), httpStat)
-    return
-  }
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "MongoSession", err.Error(), httpStat)
-    return
-  }
-  defer session.Close()
-
-  // Intento borrarlo
-  // ****************
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  selector := bson.M{"_id": filosofo.ID}
-  updator := bson.M{
-    "$set": bson.M{
-      "borrado": true,
-      "timestamp": time.Now(),
-    },
-  }
-  err = collection.Update(selector, updator)
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    core.RspMsgJSON(w, req, "ERROR", filosofo.Filosofo, strings.Join(s, ""), http.StatusInternalServerError)
-    return
-  }
-  filosofo.Borrado = true
-
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Novedad#")
-  context.Set(req, "Coleccion", config.DB_Filosofo)
-  context.Set(req, "Objeto_id", filosofo.ID)
-  context.Set(req, "Audit", filosofo)
-
-  // Está todo Ok
-  // ************
-  s := []string{"Borró el filósofo ", filosofo.Filosofo}
-  core.RspMsgJSON(w, req, "OK", filosofo.Filosofo, strings.Join(s, ""), http.StatusAccepted)
-  return
-}
-
-
-func xFilosofosTraer(w http.ResponseWriter, req *http.Request) {
-  var filosofo models.Filosofo
-  var filosofos []models.Filosofo
-  vars := mux.Vars(req)
-  orden := vars["orden"]
-  limite := vars["limite"]
-
-  // Verifico el formato del campo limite
-  // ************************************
-  limiteInt, err := strconv.Atoi(limite)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "Límite debe ser numérico", err.Error(), http.StatusBadRequest)
-    return
-  }
-
-  // Verifico que el campo orden sea Unique
-  // **************************************
-  if orden != "filosofo" && orden != "-filosofo" {
-    s := []string{"El campo ", orden, " no está soportado para ordenar"}
-    core.RspMsgJSON(w, req, "ERROR", "Orden", strings.Join(s, ""), http.StatusBadRequest)
-    return
-  }
-
-  // Decode del JSON
-  // ***************
-  decoder := json.NewDecoder(req.Body)
-  err = decoder.Decode(&filosofo)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
-    return
-  }
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "MongoSession", err.Error(), httpStat)
-    return
-  }
-  defer session.Close()
-
-  // Trato de traerlos
-  // *****************
-  selector := bson.M{
-    "filosofo": bson.M{"$regex": bson.RegEx{filosofo.Filosofo, "i"}},
-    "doctrina": bson.M{"$regex": bson.RegEx{filosofo.Doctrina, "i"}},
-    "biografia": bson.M{"$regex": bson.RegEx{filosofo.Biografia, "i"}},
-    "activo": filosofo.Activo,
-    "borrado": false,
-  }
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  collection.Find(selector).Sort(orden).Limit(limiteInt).All(&filosofos)
-
-  // Si el resultado es vacío devuelvo ERROR
-  // ***************************************
-  if filosofos == nil {
-    core.RspMsgJSON(w, req, "ERROR", "Filosofos", "INVALID_PARAMS: No hay filosofos para tu búsqueda", http.StatusBadRequest)
-    return
-  }
-
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Oper#")
-  context.Set(req, "Coleccion", config.DB_Filosofo)
-  context.Set(req, "Objeto_id", context.Get(req, "CicloDeVida_id").(bson.ObjectId))
-  context.Set(req, "Audit", "")
-
-  // Está todo Ok
-  // ************
-  s := []string{"Trajo filósofos /orden: ", orden, " /limite: ", limite}
-  context.Set(req, "Novedad", strings.Join(s, ""))
-  respuesta, error := json.Marshal(filosofos)
+  respuesta, error := json.Marshal(documento)
   core.FatalErr(error)
   core.RspJSON(w, req, respuesta, http.StatusOK)
   return
 }
 
-func xFilosofosTraerSiguiente(w http.ResponseWriter, req *http.Request) {
-  var filosofo models.Filosofo
-  var filosofos []models.Filosofo
-  vars := mux.Vars(req)
-  orden := vars["orden"]
-  limite := vars["limite"]
-  ultimoOrden := vars["ultimo_campo_orden"]
-
-  // Verifico el formato del campo limite
-  // ************************************
-  limiteInt, err := strconv.Atoi(limite)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "Límite debe ser numérico", err.Error(), http.StatusBadRequest)
-    return
-  }
-
-  // Verifico que el campo orden sea Unique
-  // **************************************
-  if orden != "filosofo" && orden != "-filosofo" {
-    s := []string{"El campo ", orden, " no está soportado para ordenar"}
-    core.RspMsgJSON(w, req, "ERROR", "Orden", strings.Join(s, ""), http.StatusBadRequest)
-    return
-  }
-
-  // Decode del JSON
-  // ***************
-  decoder := json.NewDecoder(req.Body)
-  err = decoder.Decode(&filosofo)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
-    return
-  }
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection
+func Filosofo_X_ID(documentoID bson.ObjectId, audit string) (string, string, string, int, models.Filosofo) {
+  //-------------------Modificar ######
+  var documento models.Filosofo
+  coll := config.DB_Filosofo
 
   // Genero una nueva sesión Mongo
   // *****************************
   session, err, httpStat := core.GetMongoSession()
   if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "MongoSession", err.Error(), httpStat)
-    return
-  }
-  defer session.Close()
-
-  // Trato de traerlos
-  // *****************
-  var selector bson.M
-  if strings.HasPrefix(orden, "-") {
-    selector = bson.M{
-      "filosofo": bson.M{"$lt": ultimoOrden, "$regex": bson.RegEx{filosofo.Filosofo, "i"}},
-      "doctrina": bson.M{"$regex": bson.RegEx{filosofo.Doctrina, "i"}},
-      "biografia": bson.M{"$regex": bson.RegEx{filosofo.Biografia, "i"}},
-      "activo": filosofo.Activo,
-      "borrado": false,
-    }
-  } else {
-    selector = bson.M{
-      "filosofo": bson.M{"$gt": ultimoOrden, "$regex": bson.RegEx{filosofo.Filosofo, "i"}},
-      "doctrina": bson.M{"$regex": bson.RegEx{filosofo.Doctrina, "i"}},
-      "biografia": bson.M{"$regex": bson.RegEx{filosofo.Biografia, "i"}},
-      "activo": filosofo.Activo,
-      "borrado": false,
-    }
-  }
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  collection.Find(selector).Sort(orden).Limit(limiteInt).All(&filosofos)
-
-  // Si el resultado es vacío devuelvo ERROR
-  // ***************************************
-  if filosofos == nil {
-    core.RspMsgJSON(w, req, "ERROR", "Filosofos", "INVALID_PARAMS: No hay filosofos para tu búsqueda", http.StatusBadRequest)
-    return
-  }
-
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Oper#")
-  context.Set(req, "Coleccion", config.DB_Filosofo)
-  context.Set(req, "Objeto_id", context.Get(req, "CicloDeVida_id").(bson.ObjectId))
-  context.Set(req, "Audit", "")
-
-  // Está todo Ok
-  // ************
-  s := []string{"Trajo filósofos siguiente /orden: ", orden, " /limite: ", limite}
-  context.Set(req, "Novedad", strings.Join(s, ""))
-  respuesta, error := json.Marshal(filosofos)
-  core.FatalErr(error)
-  core.RspJSON(w, req, respuesta, http.StatusOK)
-  return
-}
-
-func FilosofosTraerAnterior(w http.ResponseWriter, req *http.Request) {
-  var filosofo models.Filosofo
-  var filosofos []models.Filosofo
-  vars := mux.Vars(req)
-  orden := vars["orden"]
-  limite := vars["limite"]
-  primerOrden := vars["primer_campo_orden"]
-
-  // Verifico el formato del campo limite
-  // ************************************
-  limiteInt, err := strconv.Atoi(limite)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "Límite debe ser numérico", err.Error(), http.StatusBadRequest)
-    return
-  }
-
-  // Verifico que el campo orden sea Unique
-  // **************************************
-  if orden != "filosofo" && orden != "-filosofo" {
-    s := []string{"El campo ", orden, " no está soportado para ordenar"}
-    core.RspMsgJSON(w, req, "ERROR", "Orden", strings.Join(s, ""), http.StatusBadRequest)
-    return
-  }
-
-  // Decode del JSON
-  // ***************
-  decoder := json.NewDecoder(req.Body)
-  err = decoder.Decode(&filosofo)
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
-    return
-  }
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    core.RspMsgJSON(w, req, "ERROR", "MongoSession", err.Error(), httpStat)
-    return
-  }
-  defer session.Close()
-
-  // Trato de traerlos
-  // *****************
-  var selector bson.M
-  if strings.HasPrefix(orden, "-") {
-    selector = bson.M{
-      "filosofo": bson.M{"$gt": primerOrden, "$regex": bson.RegEx{filosofo.Filosofo, "i"}},
-      "doctrina": bson.M{"$regex": bson.RegEx{filosofo.Doctrina, "i"}},
-      "biografia": bson.M{"$regex": bson.RegEx{filosofo.Biografia, "i"}},
-      "activo": filosofo.Activo,
-      "borrado": false,
-    }
-  } else {
-    selector = bson.M{
-      "filosofo": bson.M{"$lt": primerOrden, "$regex": bson.RegEx{filosofo.Filosofo, "i"}},
-      "doctrina": bson.M{"$regex": bson.RegEx{filosofo.Doctrina, "i"}},
-      "biografia": bson.M{"$regex": bson.RegEx{filosofo.Biografia, "i"}},
-      "activo": filosofo.Activo,
-      "borrado": false,
-    }
-  }
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  collection.Find(selector).Sort(orden).Limit(limiteInt).All(&filosofos)
-
-  // Si el resultado es vacío devuelvo ERROR
-  // ***************************************
-  if filosofos == nil {
-    core.RspMsgJSON(w, req, "ERROR", "Filosofos", "INVALID_PARAMS: No hay filosofos para tu búsqueda", http.StatusBadRequest)
-    return
-  }
-
-  // Establezco las variables
-  // ************************
-  context.Set(req, "TipoOper", "#Oper#")
-  context.Set(req, "Coleccion", config.DB_Filosofo)
-  context.Set(req, "Objeto_id", context.Get(req, "CicloDeVida_id").(bson.ObjectId))
-  context.Set(req, "Audit", "")
-
-  // Está todo Ok
-  // ************
-  s := []string{"Trajo filósofos anterior /orden: ", orden, " /limite: ", limite}
-  context.Set(req, "Novedad", strings.Join(s, ""))
-  respuesta, error := json.Marshal(filosofos)
-  core.FatalErr(error)
-  core.RspJSON(w, req, respuesta, http.StatusOK)
-  return
-}
-
-func FilosofoExiste(filosofoExiste string, filosofoString string) (error, int) {
-  var filosofo models.Filosofo
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, _ := core.GetMongoSession()
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
-  }
-  defer session.Close()
-
-  // Me aseguro el índice
-  // ********************
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  index := mgo.Index{
-    Key:        []string{"filosofo"},
-    Unique:     true,
-    DropDups:   false,
-    Background: true,
-    Sparse:     true,
-  }
-  err = collection.EnsureIndex(index)
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
-  }
-
-  // Verifico si Existe
-  // ******************
-  collection.Find(bson.M{"filosofo": filosofoExiste}).One(&filosofo)
-  // Me fijo si coincide con el recibido
-  if bson.IsObjectIdHex(filosofoString) == true {
-    if filosofo.ID == bson.ObjectIdHex(filosofoString) {
-      return nil, http.StatusOK
-    }
-  }
-  // No existe
-  if filosofo.ID == "" {
-    return nil, http.StatusOK
-  }
-  // Existe borrado
-  if filosofo.Borrado == true {
-    s := []string{"INVALID_PARAMS: El filósofo ", filosofoExiste," ya existe borrado"}
-    return fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
-  }
-  // Existe inactivo
-  if filosofo.Activo == false {
-    s := []string{"INVALID_PARAMS: El filósofo ", filosofoExiste," ya existe inactivo"}
-    return fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
-  }
-  // Existe
-  s := []string{"INVALID_PARAMS: El filósofo ", filosofoExiste," ya existe"}
-  return fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
-}
-
-func Filosofo_X_ID(filosofoID bson.ObjectId) (models.Filosofo, error, int) {
-  var filosofo models.Filosofo
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, _ := core.GetMongoSession()
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return filosofo, fmt.Errorf(strings.Join(s, "")), http.StatusInternalServerError
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento
   }
   defer session.Close()
 
   // Trato de traerlo
   // ****************
-  collection := session.DB(config.DB_Name).C(config.DB_Filosofo)
-  collection.Find(bson.M{"_id": filosofoID}).One(&filosofo)
-  // Si no existe devuelvo error
-  if filosofo.ID == "" {
-    s := []string{"INVALID_PARAMS: El filósofo no existe"}
-    return filosofo, fmt.Errorf(strings.Join(s, "")), http.StatusBadRequest
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(bson.M{"_id": documentoID}).Select(bson.M{"empresa_id":0}).One(&documento)
+  // No existe
+  if documento.ID == "" {
+    s := []string{"INVALID_PARAMS: No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documento
+  }
+  // Existe
+  return "OK", audit, "Ok", http.StatusOK, documento
+}
+
+func FilosofoGuardar(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ###### estas 2 variables
+  var documento models.Filosofo
+  vars := mux.Vars(req)
+  ID := vars["filosofoID"]
+  audit := "Guardar"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documento)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
   }
 
-  // Existe
-  // ******
-  return filosofo, nil, http.StatusOK
+  // Busco para obtener los campos faltantes
+  // ***************************************
+  //------------------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExistente := Filosofo_X_ID(documentoID, "Buscar ID")
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  documento.Borrado = documentoExistente.Borrado
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat = FilosofoModificar(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Guardaste ", documento.Filosofo}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", documento.Filosofo, strings.Join(s, ""), http.StatusAccepted)
+  return
 }
-*/
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
+func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo, req *http.Request, audit string) (string, string, string, int) {
+  //-------------------Modificar ###### las 3 variables
+  camposVacios := "no podés dejar vacío el campo Filósofo"
+  coll := config.DB_Filosofo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Verifico los campos obligatorios
+  // ********************************
+  //---------------Modificar ######
+  if documentoModi.Filosofo == "" {
+    s := []string{"INVALID_PARAMS: ", camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest
+  }
+
+  // Me fijo si ya Existe la clave única
+  // ***********************************
+  //------------------------------------------------------Modificar ######-------------Modificar ######
+  estado, valor, mensaje, httpStat, documentoExiste, _ := FilosofoExiste(documentoModi.Filosofo, req)
+  if httpStat == http.StatusInternalServerError {
+    return estado, valor, mensaje, httpStat
+  }
+  if httpStat != http.StatusOK && documentoExiste.ID != documentoID {
+    return estado, valor, mensaje, httpStat
+  }
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat
+  }
+  defer session.Close()
+
+  // Intento la modificación
+  // ***********************
+  //-------------------Modificar ######
+  documentoModi.ID = documentoID
+  documentoModi.Empresa_id = empresaID
+  collection := session.DB(config.DB_Name).C(coll)
+  selector := bson.M{"_id": documentoID}
+  updator := bson.M{
+    "$set": bson.M{
+      "filosofo": documentoModi.Filosofo,
+      "doctrina": documentoModi.Doctrina,
+      "biografia": documentoModi.Biografia,
+      "activo": documentoModi.Activo,
+      "borrado": documentoModi.Borrado,
+      "timestamp": time.Now(),
+    },
+  }
+  err = collection.Update(selector, updator)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError
+  }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, coll, documentoID, audit, documentoModi)
+  return "OK", audit, "Ok", http.StatusOK
+}
