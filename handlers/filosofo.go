@@ -253,9 +253,9 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
 
   // Si el resultado es vacío devuelvo ERROR
   // ***************************************
-  if documentos == nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError, documentos
+  if len(documentos) == 0 {
+    s := []string{"INVALID_PARAMS: ", "No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documentos
   }
 
   // Está todo Ok
