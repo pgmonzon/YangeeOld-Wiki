@@ -275,8 +275,8 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (string, string, strin
   collection.Find(bson.M{"usuario": usuarioLogin, "clave": strconv.FormatInt(core.HashSha512(claveLogin),16), "activo": true, "borrado": false}).One(&usuario)
   // Si no loguea
   if usuario.ID == "" {
-    s := []string{"FORBIDDEN: ", "Usuario y clave incorrectos"}
-    return "ERROR", "Login", strings.Join(s, ""), http.StatusForbidden, usuario, empresa
+    s := []string{"NON_AUTHORITATIVE_INFO: ", "Usuario y clave incorrectos"}
+    return "ERROR", "Login", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, usuario, empresa
   }
 
   // Traigo la empresa del usuario
