@@ -69,7 +69,7 @@ func FilosofoCrear(w http.ResponseWriter, req *http.Request) {
 func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request, audit string) (string, string, string, int, models.Filosofo, bool) {
   //-------------------Modificar ###### las 3 variables
 	var documento models.Filosofo
-  camposVacios := "no podés dejar vacío el campo Filósofo"
+  camposVacios := "No podés dejar vacío el campo Filósofo"
   coll := config.DB_Filosofo
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
@@ -77,8 +77,8 @@ func FilosofoAlta(documentoAlta models.Filosofo, req *http.Request, audit string
   // ********************************
   //---------------Modificar ######
   if documentoAlta.Filosofo == "" {
-    s := []string{"INVALID_PARAMS: ", camposVacios}
-    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest, documento, false
+    s := []string{camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, false
   }
 
   // Me fijo si ya Existe
@@ -160,17 +160,17 @@ func FilosofoExiste(documentoExiste string, req *http.Request) (string, string, 
   }
   // Existe borrado
   if documento.Borrado == true {
-    s := []string{"INVALID_PARAMS: ", documentoExiste," existe borrado"}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+    s := []string{documentoExiste," existe borrado"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
   }
   // Existe inactivo
   if documento.Activo == false {
-    s := []string{"INVALID_PARAMS: ", documentoExiste," existe inactivo"}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+    s := []string{documentoExiste," existe inactivo"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
   }
   // Existe
-  s := []string{"INVALID_PARAMS: ", documentoExiste," ya existe"}
-  return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+  s := []string{documentoExiste," ya existe"}
+  return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
 }
 
 func FilosofosTraer(w http.ResponseWriter, req *http.Request) {
@@ -227,7 +227,7 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
   //-----------Modificar ######
   if orden != "filosofo" && orden != "-filosofo" {
     s := []string{"No puedo ordenar por ", orden}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documentos
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
 
   // Genero una nueva sesión Mongo
@@ -254,8 +254,8 @@ func FilosofosBuscar(documento models.Filosofo, orden string, limiteInt int, bor
   // Si el resultado es vacío devuelvo ERROR
   // ***************************************
   if len(documentos) == 0 {
-    s := []string{"INVALID_PARAMS: ", "No encontré documentos"}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documentos
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
 
   // Está todo Ok
@@ -313,8 +313,8 @@ func Filosofo_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (
   collection.Find(bson.M{"_id": documentoID, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
   // No existe
   if documento.ID == "" {
-    s := []string{"INVALID_PARAMS: No encuentro el documento"}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documento
+    s := []string{"No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
   }
   // Existe
   return "OK", audit, "Ok", http.StatusOK, documento
@@ -567,7 +567,7 @@ func FilosofoRecuperar(w http.ResponseWriter, req *http.Request) {
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo, req *http.Request, audit string) (string, string, string, int) {
   //-------------------Modificar ###### las 2 variables
-  camposVacios := "no podés dejar vacío el campo Filósofo"
+  camposVacios := "No podés dejar vacío el campo Filósofo"
   coll := config.DB_Filosofo
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
@@ -575,8 +575,8 @@ func FilosofoModificar(documentoID bson.ObjectId, documentoModi models.Filosofo,
   // ********************************
   //---------------Modificar ######
   if documentoModi.Filosofo == "" {
-    s := []string{"INVALID_PARAMS: ", camposVacios}
-    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest
+    s := []string{camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
 
   // Me fijo si ya Existe la clave única

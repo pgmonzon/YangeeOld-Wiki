@@ -69,7 +69,7 @@ func TipoUnidadCrear(w http.ResponseWriter, req *http.Request) {
 func TipoUnidadAlta(documentoAlta models.TipoUnidad, req *http.Request, audit string) (string, string, string, int, models.TipoUnidad, bool) {
   //-------------------Modificar ###### las 3 variables
 	var documento models.TipoUnidad
-  camposVacios := "no podés dejar vacío el campo TipoUnidad"
+  camposVacios := "No podés dejar vacío el campo TipoUnidad"
   coll := config.DB_TipoUnidad
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
@@ -77,8 +77,8 @@ func TipoUnidadAlta(documentoAlta models.TipoUnidad, req *http.Request, audit st
   // ********************************
   //---------------Modificar ######
   if documentoAlta.TipoUnidad == "" {
-    s := []string{"INVALID_PARAMS: ", camposVacios}
-    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest, documento, false
+    s := []string{camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, false
   }
 
   // Me fijo si ya Existe
@@ -160,17 +160,17 @@ func TipoUnidadExiste(documentoExiste string, req *http.Request) (string, string
   }
   // Existe borrado
   if documento.Borrado == true {
-    s := []string{"INVALID_PARAMS: ", documentoExiste," existe borrado"}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+    s := []string{documentoExiste," existe borrado"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
   }
   // Existe inactivo
   if documento.Activo == false {
-    s := []string{"INVALID_PARAMS: ", documentoExiste," existe inactivo"}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+    s := []string{documentoExiste," existe inactivo"}
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
   }
   // Existe
-  s := []string{"INVALID_PARAMS: ", documentoExiste," ya existe"}
-  return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documento, true
+  s := []string{documentoExiste," ya existe"}
+  return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
 }
 
 func TipoUnidadesTraer(w http.ResponseWriter, req *http.Request) {
@@ -227,7 +227,7 @@ func TipoUnidadesBuscar(documento models.TipoUnidad, orden string, limiteInt int
   //-----------Modificar ######
   if orden != "tipo_unidad" && orden != "-tipo_unidad" {
     s := []string{"No puedo ordenar por ", orden}
-    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusBadRequest, documentos
+    return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
 
   // Genero una nueva sesión Mongo
@@ -252,8 +252,8 @@ func TipoUnidadesBuscar(documento models.TipoUnidad, orden string, limiteInt int
   // Si el resultado es vacío devuelvo ERROR
   // ***************************************
   if len(documentos) == 0 {
-    s := []string{"INVALID_PARAMS: ", "No encontré documentos"}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documentos
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
 
   // Está todo Ok
@@ -311,8 +311,8 @@ func TipoUnidad_X_ID(documentoID bson.ObjectId, audit string, req *http.Request)
   collection.Find(bson.M{"_id": documentoID, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
   // No existe
   if documento.ID == "" {
-    s := []string{"INVALID_PARAMS: No encuentro el documento"}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusBadRequest, documento
+    s := []string{"No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
   }
   // Existe
   return "OK", audit, "Ok", http.StatusOK, documento
@@ -557,7 +557,7 @@ func TipoUnidadRecuperar(w http.ResponseWriter, req *http.Request) {
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func TipoUnidadModificar(documentoID bson.ObjectId, documentoModi models.TipoUnidad, req *http.Request, audit string) (string, string, string, int) {
   //-------------------Modificar ###### las 2 variables
-  camposVacios := "no podés dejar vacío el campo TipoUnidad"
+  camposVacios := "No podés dejar vacío el campo TipoUnidad"
   coll := config.DB_TipoUnidad
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
@@ -565,8 +565,8 @@ func TipoUnidadModificar(documentoID bson.ObjectId, documentoModi models.TipoUni
   // ********************************
   //---------------Modificar ######
   if documentoModi.TipoUnidad == "" {
-    s := []string{"INVALID_PARAMS: ", camposVacios}
-    return "ERROR", "Alta", strings.Join(s, ""), http.StatusBadRequest
+    s := []string{camposVacios}
+    return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
 
   // Me fijo si ya Existe la clave única
