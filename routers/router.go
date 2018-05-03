@@ -58,6 +58,17 @@ func InicializarRutas() {
 	router.HandleFunc("/tipoUnidad/{docID}", handlers.ValidarMiddleware(handlers.TipoUnidadTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/tipoUnidades/{orden}/{limite}", handlers.ValidarMiddleware(handlers.TipoUnidadesTraer, "NO_VALIDAR")).Methods("POST")
 
+	// Categorías
+	// **********
+	router.HandleFunc("/categoria", handlers.ValidarMiddleware(handlers.CategoriaCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/categoria/{docID}", handlers.ValidarMiddleware(handlers.CategoriaGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/categoriaHabilitar/{docID}", handlers.ValidarMiddleware(handlers.CategoriaHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/categoriaDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.CategoriaDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/categoria/{docID}", handlers.ValidarMiddleware(handlers.CategoriaBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/categoriaRecuperar/{docID}", handlers.ValidarMiddleware(handlers.CategoriaRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/categoria/{docID}", handlers.ValidarMiddleware(handlers.CategoriaTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/categorias/{orden}/{limite}", handlers.ValidarMiddleware(handlers.CategoriasTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
