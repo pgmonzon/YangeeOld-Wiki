@@ -20,19 +20,19 @@ import (
 /*
 !!! PONER EL FIND EN CASE SENSITIVE !!!
 *** Reemplazos automáticos ***
-reemplazar TipoUnidades (mayúscula plural) 4 apariciones
-reemplazar TipoUnidad (mayúscula singular) 76 apariciones
-reemplazar tipo_unidad (minúscula singular) 7 apariciones IMPORANTE: no puede tener mayúsculas
+reemplazar BasicoSindicatos (mayúscula plural) 4 apariciones
+reemplazar BasicoSindicato (mayúscula singular) 76 apariciones
+reemplazar basico_sindicato (minúscula singular) 7 apariciones IMPORANTE: no puede tener mayúsculas
 
 *** Reemplazos manuales ***
-reemplazar "no podés dejar vacío" 3 apariciones
+reemplazar "No podés dejar vacío" 3 apariciones
 reemplazar "en forma manual" 7 apariciones
 reemplazar "en orden" 2 apariciones
 */
 
-func TipoUnidadCrear(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoCrear(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ###### estas 2 variables
-	var documento models.TipoUnidad
+	var documento models.BasicoSindicato
   audit := "Crear"
 
   // Decode del JSON
@@ -47,7 +47,7 @@ func TipoUnidadCrear(w http.ResponseWriter, req *http.Request) {
   // Doy de alta
   // ***********
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := TipoUnidadAlta(documento, req, audit)
+  estado, valor, mensaje, httpStat, documento, existia := BasicoSindicatoAlta(documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -60,24 +60,24 @@ func TipoUnidadCrear(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Agregaste ", documento.TipoUnidad}
+  s := []string{"Agregaste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusCreated)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusCreated)
   return
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func TipoUnidadAlta(documentoAlta models.TipoUnidad, req *http.Request, audit string) (string, string, string, int, models.TipoUnidad, bool) {
+func BasicoSindicatoAlta(documentoAlta models.BasicoSindicato, req *http.Request, audit string) (string, string, string, int, models.BasicoSindicato, bool) {
   //-------------------Modificar ###### las 3 variables
-	var documento models.TipoUnidad
-  camposVacios := "No podés dejar vacío el campo TipoUnidad"
-  coll := config.DB_TipoUnidad
+	var documento models.BasicoSindicato
+  camposVacios := "No podés dejar vacío el campo Básico Sindicato"
+  coll := config.DB_BasicoSindicato
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico los campos obligatorios
   // ********************************
   //---------------Modificar ######
-  if documentoAlta.TipoUnidad == "" {
+  if documentoAlta.BasicoSindicato == "" {
     s := []string{camposVacios}
     return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, false
   }
@@ -85,7 +85,7 @@ func TipoUnidadAlta(documentoAlta models.TipoUnidad, req *http.Request, audit st
   // Me fijo si ya Existe
   // ********************
   //-----------------------------------------------------Modificar ######--------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := TipoUnidadExiste(documentoAlta.TipoUnidad, req)
+  estado, valor, mensaje, httpStat, documento, existia := BasicoSindicatoExiste(documentoAlta.BasicoSindicato, req)
   if httpStat != http.StatusOK || existia == true {
     return estado, valor, mensaje, httpStat, documento, existia
   }
@@ -120,11 +120,11 @@ func TipoUnidadAlta(documentoAlta models.TipoUnidad, req *http.Request, audit st
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func TipoUnidadExiste(documentoExiste string, req *http.Request) (string, string, string, int, models.TipoUnidad, bool) {
+func BasicoSindicatoExiste(documentoExiste string, req *http.Request) (string, string, string, int, models.BasicoSindicato, bool) {
   //-------------------Modificar ###### las 3 variables
-  var documento models.TipoUnidad
-  indice := []string{"empresa_id", "tipo_unidad"}
-  coll := config.DB_TipoUnidad
+  var documento models.BasicoSindicato
+  indice := []string{"empresa_id", "basico_sindicato"}
+  coll := config.DB_BasicoSindicato
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
@@ -154,7 +154,7 @@ func TipoUnidadExiste(documentoExiste string, req *http.Request) (string, string
   // Verifico si Existe
   // ******************
   //----------------------------------------------Modificar ######
-  collection.Find(bson.M{"empresa_id": empresaID, "tipo_unidad": documentoExiste}).One(&documento)
+  collection.Find(bson.M{"empresa_id": empresaID, "basico_sindicato": documentoExiste}).One(&documento)
   // No existe
   if documento.ID == "" {
     return "OK", "Buscar", "Ok", http.StatusOK, documento, false
@@ -174,10 +174,10 @@ func TipoUnidadExiste(documentoExiste string, req *http.Request) (string, string
   return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
 }
 
-func TipoUnidadesTraer(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatosTraer(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ###### estas 2 variables
-  var documento models.TipoUnidad
-  var documentos []models.TipoUnidad
+  var documento models.BasicoSindicato
+  var documentos []models.BasicoSindicato
   vars := mux.Vars(req)
   orden := vars["orden"]
   limite := vars["limite"]
@@ -202,7 +202,7 @@ func TipoUnidadesTraer(w http.ResponseWriter, req *http.Request) {
   // Busco
   // *****
   //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentos := TipoUnidadesBuscar(documento, orden, limiteInt, false, "Buscar", req)
+  estado, valor, mensaje, httpStat, documentos := BasicoSindicatosBuscar(documento, orden, limiteInt, false, "Buscar", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -217,16 +217,16 @@ func TipoUnidadesTraer(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection
-func TipoUnidadesBuscar(documento models.TipoUnidad, orden string, limiteInt int, borrados bool, audit string, req *http.Request) (string, string, string, int, []models.TipoUnidad) {
+func BasicoSindicatosBuscar(documento models.BasicoSindicato, orden string, limiteInt int, borrados bool, audit string, req *http.Request) (string, string, string, int, []models.BasicoSindicato) {
   //----------------------Modificar ###### estas 2 variables
-  var documentos []models.TipoUnidad
-  coll := config.DB_TipoUnidad
+  var documentos []models.BasicoSindicato
+  coll := config.DB_BasicoSindicato
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico que el campo orden sea Unique
   // **************************************
   //-----------Modificar ######
-  if orden != "tipo_unidad" && orden != "-tipo_unidad" {
+  if orden != "basico_sindicato" && orden != "-basico_sindicato" {
     s := []string{"No puedo ordenar por ", orden}
     return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
@@ -244,7 +244,7 @@ func TipoUnidadesBuscar(documento models.TipoUnidad, orden string, limiteInt int
   //----------Modificar ###### en forma manual
   selector := bson.M{
     "empresa_id": empresaID,
-    "tipo_unidad": bson.M{"$regex": bson.RegEx{documento.TipoUnidad, "i"}},
+    "basico_sindicato": bson.M{"$regex": bson.RegEx{documento.BasicoSindicato, "i"}},
     "borrado": borrados,
   }
   collection := session.DB(config.DB_Name).C(coll)
@@ -262,7 +262,7 @@ func TipoUnidadesBuscar(documento models.TipoUnidad, orden string, limiteInt int
   return "OK", audit, "Ok", http.StatusOK, documentos
 }
 
-func TipoUnidadTraer(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoTraer(w http.ResponseWriter, req *http.Request) {
   vars := mux.Vars(req)
   ID := vars["docID"]
 
@@ -277,7 +277,7 @@ func TipoUnidadTraer(w http.ResponseWriter, req *http.Request) {
   // Busco
   // *****
   //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documento := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -292,10 +292,10 @@ func TipoUnidadTraer(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, collection
-func TipoUnidad_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.TipoUnidad) {
+func BasicoSindicato_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.BasicoSindicato) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
-  coll := config.DB_TipoUnidad
+  var documento models.BasicoSindicato
+  coll := config.DB_BasicoSindicato
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
@@ -319,9 +319,9 @@ func TipoUnidad_X_ID(documentoID bson.ObjectId, audit string, req *http.Request)
   return "OK", audit, "Ok", http.StatusOK, documento
 }
 
-func TipoUnidadGuardar(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoGuardar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
+  var documento models.BasicoSindicato
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Guardar"
@@ -346,7 +346,7 @@ func TipoUnidadGuardar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -356,7 +356,7 @@ func TipoUnidadGuardar(w http.ResponseWriter, req *http.Request) {
   // Modifico
   // ********
   //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = TipoUnidadModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = BasicoSindicatoModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -365,15 +365,15 @@ func TipoUnidadGuardar(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Guardaste ", documento.TipoUnidad}
+  s := []string{"Guardaste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusAccepted)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func TipoUnidadHabilitar(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoHabilitar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
+  var documento models.BasicoSindicato
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Habilitar"
@@ -389,20 +389,20 @@ func TipoUnidadHabilitar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
   //-------Modificar ###### en forma manual
-  documento.TipoUnidad = documentoExistente.TipoUnidad
+  documento.BasicoSindicato = documentoExistente.BasicoSindicato
   documento.Activo = true
   documento.Borrado = documentoExistente.Borrado
 
   // Modifico
   // ********
   //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = TipoUnidadModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = BasicoSindicatoModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -411,15 +411,15 @@ func TipoUnidadHabilitar(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Habilitaste ", documento.TipoUnidad}
+  s := []string{"Habilitaste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusAccepted)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func TipoUnidadDeshabilitar(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoDeshabilitar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
+  var documento models.BasicoSindicato
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Deshabilitar"
@@ -435,20 +435,20 @@ func TipoUnidadDeshabilitar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
   //-------Modificar ###### en forma manual
-  documento.TipoUnidad = documentoExistente.TipoUnidad
+  documento.BasicoSindicato = documentoExistente.BasicoSindicato
   documento.Activo = false
   documento.Borrado = documentoExistente.Borrado
 
   // Modifico
   // ********
   //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = TipoUnidadModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = BasicoSindicatoModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -457,15 +457,15 @@ func TipoUnidadDeshabilitar(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Deshabilitaste ", documento.TipoUnidad}
+  s := []string{"Deshabilitaste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusAccepted)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func TipoUnidadBorrar(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoBorrar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
+  var documento models.BasicoSindicato
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Borrar"
@@ -481,20 +481,20 @@ func TipoUnidadBorrar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
   //-------Modificar ###### en forma manual
-  documento.TipoUnidad = documentoExistente.TipoUnidad
+  documento.BasicoSindicato = documentoExistente.BasicoSindicato
   documento.Activo = documentoExistente.Activo
   documento.Borrado = true
 
   // Modifico
   // ********
   //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = TipoUnidadModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = BasicoSindicatoModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -503,15 +503,15 @@ func TipoUnidadBorrar(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Borraste ", documento.TipoUnidad}
+  s := []string{"Borraste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusAccepted)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func TipoUnidadRecuperar(w http.ResponseWriter, req *http.Request) {
+func BasicoSindicatoRecuperar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
-  var documento models.TipoUnidad
+  var documento models.BasicoSindicato
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Recuperar"
@@ -527,20 +527,20 @@ func TipoUnidadRecuperar(w http.ResponseWriter, req *http.Request) {
   // Busco para obtener los campos faltantes
   // ***************************************
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := TipoUnidad_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := BasicoSindicato_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
   //-------Modificar ###### en forma manual
-  documento.TipoUnidad = documentoExistente.TipoUnidad
+  documento.BasicoSindicato = documentoExistente.BasicoSindicato
   documento.Activo = documentoExistente.Activo
   documento.Borrado = false
 
   // Modifico
   // ********
   //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = TipoUnidadModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = BasicoSindicatoModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -549,23 +549,23 @@ func TipoUnidadRecuperar(w http.ResponseWriter, req *http.Request) {
   // Está todo Ok
   // ************
   //------------------------------------Modificar ######
-  s := []string{"Recuperaste ", documento.TipoUnidad}
+  s := []string{"Recuperaste ", documento.BasicoSindicato}
   //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.TipoUnidad, strings.Join(s, ""), http.StatusAccepted)
+  core.RspMsgJSON(w, req, "OK", documento.BasicoSindicato, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func TipoUnidadModificar(documentoID bson.ObjectId, documentoModi models.TipoUnidad, req *http.Request, audit string) (string, string, string, int) {
+func BasicoSindicatoModificar(documentoID bson.ObjectId, documentoModi models.BasicoSindicato, req *http.Request, audit string) (string, string, string, int) {
   //-------------------Modificar ###### las 2 variables
-  camposVacios := "No podés dejar vacío el campo TipoUnidad"
-  coll := config.DB_TipoUnidad
+  camposVacios := "No podés dejar vacío el campo Básico Sindicato"
+  coll := config.DB_BasicoSindicato
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico los campos obligatorios
   // ********************************
   //---------------Modificar ######
-  if documentoModi.TipoUnidad == "" {
+  if documentoModi.BasicoSindicato == "" {
     s := []string{camposVacios}
     return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
@@ -573,7 +573,7 @@ func TipoUnidadModificar(documentoID bson.ObjectId, documentoModi models.TipoUni
   // Me fijo si ya Existe la clave única
   // ***********************************
   //------------------------------------------------------Modificar ######-------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExiste, _ := TipoUnidadExiste(documentoModi.TipoUnidad, req)
+  estado, valor, mensaje, httpStat, documentoExiste, _ := BasicoSindicatoExiste(documentoModi.BasicoSindicato, req)
   if httpStat == http.StatusInternalServerError {
     return estado, valor, mensaje, httpStat
   }
@@ -598,7 +598,7 @@ func TipoUnidadModificar(documentoID bson.ObjectId, documentoModi models.TipoUni
   selector := bson.M{"_id": documentoID, "empresa_id": empresaID}
   updator := bson.M{
     "$set": bson.M{
-      "tipo_unidad": documentoModi.TipoUnidad,
+      "basico_sindicato": documentoModi.BasicoSindicato,
       "activo": documentoModi.Activo,
       "borrado": documentoModi.Borrado,
       "timestamp": time.Now(),

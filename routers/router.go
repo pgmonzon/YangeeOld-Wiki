@@ -69,6 +69,50 @@ func InicializarRutas() {
 	router.HandleFunc("/categoria/{docID}", handlers.ValidarMiddleware(handlers.CategoriaTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/categorias/{orden}/{limite}", handlers.ValidarMiddleware(handlers.CategoriasTraer, "NO_VALIDAR")).Methods("POST")
 
+	// Cuentas Gastos
+	// **************
+	router.HandleFunc("/cuentaGasto", handlers.ValidarMiddleware(handlers.CuentaGastoCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/cuentaGasto/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/cuentaGastoHabilitar/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/cuentaGastoDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/cuentaGasto/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/cuentaGastoRecuperar/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/cuentaGasto/{docID}", handlers.ValidarMiddleware(handlers.CuentaGastoTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/cuentaGastos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.CuentaGastosTraer, "NO_VALIDAR")).Methods("POST")
+
+	// Basico Sindicatos
+	// *****************
+	router.HandleFunc("/basicoSindicato", handlers.ValidarMiddleware(handlers.BasicoSindicatoCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/basicoSindicato/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/basicoSindicatoHabilitar/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/basicoSindicatoDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/basicoSindicato/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/basicoSindicatoRecuperar/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/basicoSindicato/{docID}", handlers.ValidarMiddleware(handlers.BasicoSindicatoTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/basicoSindicatos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.BasicoSindicatosTraer, "NO_VALIDAR")).Methods("POST")
+
+	// Unidades
+	// ********
+	router.HandleFunc("/unidad", handlers.ValidarMiddleware(handlers.UnidadCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/unidad/{docID}", handlers.ValidarMiddleware(handlers.UnidadGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/unidadHabilitar/{docID}", handlers.ValidarMiddleware(handlers.UnidadHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/unidadDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.UnidadDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/unidad/{docID}", handlers.ValidarMiddleware(handlers.UnidadBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/unidadRecuperar/{docID}", handlers.ValidarMiddleware(handlers.UnidadRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/unidad/{docID}", handlers.ValidarMiddleware(handlers.UnidadTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/unidades/{orden}/{limite}", handlers.ValidarMiddleware(handlers.UnidadesTraer, "NO_VALIDAR")).Methods("POST")
+
+	// Personal
+	// **********
+	router.HandleFunc("/personal", handlers.ValidarMiddleware(handlers.PersonalCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/personal/{docID}", handlers.ValidarMiddleware(handlers.PersonalGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/personalHabilitar/{docID}", handlers.ValidarMiddleware(handlers.PersonalHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/personalDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.PersonalDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/personal/{docID}", handlers.ValidarMiddleware(handlers.PersonalBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/personalRecuperar/{docID}", handlers.ValidarMiddleware(handlers.PersonalRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/personal/{docID}", handlers.ValidarMiddleware(handlers.PersonalTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/personales/{orden}/{limite}", handlers.ValidarMiddleware(handlers.PersonalesTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})

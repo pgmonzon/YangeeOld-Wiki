@@ -35,6 +35,10 @@ const(
   DB_Filosofo = "filosofos"
   DB_TipoUnidad = "tipoUnidades"
   DB_Categoria = "categorias"
+  DB_CuentaGasto = "cuentaGastos"
+  DB_BasicoSindicato = "basicoSindicatos"
+  DB_Unidad = "unidades"
+  DB_Personal = "personal"
 
   // jwt
   //privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"

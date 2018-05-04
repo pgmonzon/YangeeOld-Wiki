@@ -27,6 +27,7 @@ reemplazar categoria (minúscula singular) 7 apariciones IMPORANTE: no puede ten
 *** Reemplazos manuales ***
 reemplazar "No podés dejar vacío" 3 apariciones
 reemplazar "en forma manual" 7 apariciones
+reemplazar "en orden" 2 apariciones
 */
 
 func CategoriaCrear(w http.ResponseWriter, req *http.Request) {
