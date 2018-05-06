@@ -4,10 +4,11 @@ import (
 )
 
 type Respuesta struct {
-  EstadoGral  string    `json:"estadoGral"`
+  Estado      string    `json:"estado"`
+  Valor       string    `json:"valor"`
   Mensaje     string    `json:"mensaje"`
 }
-
+// *****SACAR ******
 type Resp struct {
   EstadoGral  string    `json:"estadoGral"`
   Mensajes    []Mensaje `json:"mensajes"`

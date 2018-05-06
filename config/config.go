@@ -10,27 +10,47 @@ import (
 )
 
 const(
+  // Consola
+  MostarEnConsola = true
+  RegistrarCicloDeVida = true
+
   // Base de datos
-  DB_Host = "localhost"
-  //DB_Host = "mongodb://127.0.0.1:27017"
+  //DB_Host = "localhost"
+  DB_Host = "198.100.45.12:27017"
   //DB_Host = "mongodb://yng_user:laser@ds021326.mlab.com:21326/yangee"
   DB_Name = "yangee"
-  DB_User = "yangee"
-  DB_Pass = "1331"
+  DB_User = "yngee"
+  DB_Pass = "1962Laser"
   DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transaction"
 
-  DB_Usuario = "usuario" // tabla de usuarios
-  DB_ClienteAPI = "clienteapi" // tabla de los clientes de la API
-  DB_Permiso = "permiso" // tabla de permisos
-  DB_Rol = "rol" // tabla de roles
+  DB_CicloVida = "cicloVida" // ciclo de vida
+  DB_Audit = "audit" // auditoría
+  DB_Modulo = "modulos" // módulos del sistema
+  DB_Empresa = "empresas" // empresa del usuario
+  DB_Usuario = "usuarios" // tabla de usuarios
+  DB_ClienteAPI = "clientesApi" // tabla de los clientes de la API
+  DB_Permiso = "permisos" // tabla de permisos
+  DB_Rol = "roles" // tabla de roles
+  DB_Filosofo = "filosofos"
+  DB_TipoUnidad = "tipoUnidades"
+  DB_Categoria = "categorias"
+  DB_CuentaGasto = "cuentaGastos"
+  DB_BasicoSindicato = "basicoSindicatos"
+  DB_Unidad = "unidades"
+  DB_Personal = "personal"
 
   // jwt
-  privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
-  pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
+  //privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
+  //pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
+  privKeyPath = "/home/pgmonzon/work/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
+  pubKeyPath = "/home/pgmonzon/work/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
+
+  // Timestamp layout
+  TimestampLayout = "2006-01-02T15:04:05.000Z"
 )
 
 var (
