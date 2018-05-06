@@ -1,11 +1,10 @@
 package handlers
 
 import (
-  "time"
   "encoding/json"
   "net/http"
-  "fmt"
   "strings"
+  "time"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -15,299 +14,312 @@ import (
   "gopkg.in/mgo.v2/bson"
 )
 
-func PermisoAgregar(w http.ResponseWriter, req *http.Request) {
-	start := time.Now()
-	var Permisos models.Permisos
-  var resp models.Resp
-  var mensaje models.Mensaje
 
+func PermisoCrear(w http.ResponseWriter, req *http.Request) {
+	var permiso models.Permiso
+
+  // Decode del JSON
+  // ***************
   decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&Permisos)
+  err := decoder.Decode(&permiso)
   if err != nil {
-    resp.EstadoGral = "ERROR"
-    mensaje.Valor = "JSON"
-    mensaje.Estado = "ERROR"
-    mensaje.Mensaje = "INVALID_PARAMS: JSON decode erróneo"
-    resp.Mensajes = append(resp.Mensajes, mensaje)
-    respuesta, error := json.Marshal(resp)
-    core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
     return
-  } else {
-    // Genero una nueva sesión Mongo
-    session, err, httpStat := core.GetMongoSession()
-    if err != nil {
-      resp.EstadoGral = "ERROR"
-      mensaje.Valor = "MongoSession"
-      mensaje.Estado = "ERROR"
-      mensaje.Mensaje = err.Error()
-      resp.Mensajes = append(resp.Mensajes, mensaje)
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    } else {
-      defer session.Close()
-
-      // Recorro el JSON
-      for _, item := range Permisos.Permisos {
-        if item.Permiso == "" {
-          if resp.EstadoGral != "PARCIAL" {
-            if resp.EstadoGral == "OK" {
-              resp.EstadoGral = "PARCIAL"
-            } else {
-              resp.EstadoGral = "ERROR"
-            }
-          }
-          mensaje.Valor = item.Permiso
-          mensaje.Estado = "ERROR"
-          s := []string{"INTERNAL_SERVER_ERROR: ", "El campo Permiso no puede estar vacío"}
-          mensaje.Mensaje = strings.Join(s, "")
-          resp.Mensajes = append(resp.Mensajes, mensaje)
-        } else {
-          // Me fijo si ya existe
-          err := PermisoExiste(item.Permiso)
-          if err != nil {
-            if resp.EstadoGral != "PARCIAL" {
-              if resp.EstadoGral == "OK" {
-                resp.EstadoGral = "PARCIAL"
-              } else {
-                resp.EstadoGral = "ERROR"
-              }
-            }
-            mensaje.Valor = item.Permiso
-            mensaje.Estado = "ERROR"
-            mensaje.Mensaje = err.Error()
-            resp.Mensajes = append(resp.Mensajes, mensaje)
-          } else {
-            objID := bson.NewObjectId()
-          	item.ID = objID
-
-            // Intento el alta
-            collection := session.DB(config.DB_Name).C(config.DB_Permiso)
-            err = collection.Insert(item)
-            if err != nil {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "OK" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "ERROR"
-                }
-              }
-              mensaje.Valor = item.Permiso
-              mensaje.Estado = "ERROR"
-              s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-              mensaje.Mensaje = strings.Join(s, "")
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            } else {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "ERROR" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "OK"
-                }
-              }
-              mensaje.Valor = item.Permiso
-              mensaje.Estado = "OK"
-              mensaje.Mensaje = "OK"
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            }
-          }
-        }
-      }
-      var httpStat int
-      if resp.EstadoGral == "OK" {
-        httpStat = http.StatusCreated
-      } else {
-        httpStat = http.StatusOK
-      }
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    }
   }
+
+  // Doy de alta
+  // ***********
+  estado, valor, mensaje, httpStat, permiso, existia := PermisoAlta(permiso, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Agregó el permiso ", permiso.Permiso}
+  core.RspMsgJSON(w, req, "OK", permiso.Permiso, strings.Join(s, ""), http.StatusCreated)
+  return
 }
 
-func PermisoExiste(permisoExiste string) (error) {
-  var permiso models.Permiso
+// Devuelve Estado, Valor, Mensaje, HttpStat, Permiso, Existía
+func PermisoAlta(permisoAlta models.Permiso, req *http.Request) (string, string, string, int, models.Permiso, bool) {
+	var permiso models.Permiso
+
+  // Verifico los campos obligatorios
+  // ********************************
+  if permisoAlta.Permiso == "" {
+    s := []string{"INVALID_PARAMS: permiso no puede estar vacío"}
+    return "ERROR", "PermisoAlta", strings.Join(s, ""), http.StatusBadRequest, permiso, false
+  }
+
+  // Me fijo si ya Existe
+  // ********************
+  estado, valor, mensaje, httpStat, permiso, existia := PermisoExiste(permisoAlta.Permiso)
+  if httpStat != http.StatusOK || existia == true {
+    return estado, valor, mensaje, httpStat, permiso, existia
+  }
+
   // Genero una nueva sesión Mongo
-  session, err, _ := core.GetMongoSession()
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, permiso, false
+  }
+  defer session.Close()
+
+  // Intento el alta
+  // ***************
+  objID := bson.NewObjectId()
+  permiso.ID = objID
+  permiso.Permiso = permisoAlta.Permiso
+  permiso.Modulo_id = permisoAlta.Modulo_id
+  permiso.Activo = permisoAlta.Activo
+  permiso.Timestamp = time.Now()
+  permiso.Borrado = false
+  collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+  err = collection.Insert(permiso)
   if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return fmt.Errorf(strings.Join(s, ""))
-  } else {
-    defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Permiso)
-
-    // Me aseguro el índice
-    index := mgo.Index{
-      Key:        []string{"permiso"},
-      Unique:     true,
-      DropDups:   false,
-      Background: true,
-      Sparse:     true,
-    }
-    err := collection.EnsureIndex(index)
-    if err != nil {
-      s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
-
-    collection.Find(bson.M{"permiso": permisoExiste}).One(&permiso)
-    if permiso.ID == "" {
-      return nil
-    } else {
-      s := []string{"INVALID_PARAMS: El permiso [", permisoExiste,"] ya existe"}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
+    return "ERROR", "Insert Permiso", strings.Join(s, ""), http.StatusInternalServerError, permiso, false
   }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, config.DB_Permiso, permiso.ID, "Alta", permiso)
+  return "OK", "PermisoAlta", "Ok", http.StatusOK, permiso, false
 }
 
-func RolAgregar(w http.ResponseWriter, req *http.Request) {
-  start := time.Now()
-	var Roles models.Roles
-  var resp models.Resp
-  var mensaje models.Mensaje
+// Devuelve Estado, Valor, Mensaje, HttpStat, Empresa, Existía
+func PermisoExiste(permisoExiste string) (string, string, string, int, models.Permiso, bool) {
+  var permiso models.Permiso
 
-  decoder := json.NewDecoder(req.Body)
-  err := decoder.Decode(&Roles)
-  if err != nil {
-    resp.EstadoGral = "ERROR"
-    mensaje.Valor = "JSON"
-    mensaje.Estado = "ERROR"
-    mensaje.Mensaje = "INVALID_PARAMS: JSON decode erróneo"
-    resp.Mensajes = append(resp.Mensajes, mensaje)
-    respuesta, error := json.Marshal(resp)
-    core.FatalErr(error)
-    core.RespuestaJSON(w, req, start, respuesta, http.StatusBadRequest)
-    return
-  } else {
-    // Genero una nueva sesión Mongo
-    session, err, httpStat := core.GetMongoSession()
-    if err != nil {
-      resp.EstadoGral = "ERROR"
-      mensaje.Valor = "MongoSession"
-      mensaje.Estado = "ERROR"
-      mensaje.Mensaje = err.Error()
-      resp.Mensajes = append(resp.Mensajes, mensaje)
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    } else {
-      defer session.Close()
-
-      // Recorro el JSON
-      for _, item := range Roles.Roles {
-        if item.Rol == "" {
-          if resp.EstadoGral != "PARCIAL" {
-            if resp.EstadoGral == "OK" {
-              resp.EstadoGral = "PARCIAL"
-            } else {
-              resp.EstadoGral = "ERROR"
-            }
-          }
-          mensaje.Valor = item.Rol
-          mensaje.Estado = "ERROR"
-          s := []string{"INTERNAL_SERVER_ERROR: ", "El campo Rol no puede estar vacío"}
-          mensaje.Mensaje = strings.Join(s, "")
-          resp.Mensajes = append(resp.Mensajes, mensaje)
-        } else {
-          // Me fijo si ya existe
-          err := RolExiste(item.Rol)
-          if err != nil {
-            if resp.EstadoGral != "PARCIAL" {
-              if resp.EstadoGral == "OK" {
-                resp.EstadoGral = "PARCIAL"
-              } else {
-                resp.EstadoGral = "ERROR"
-              }
-            }
-            mensaje.Valor = item.Rol
-            mensaje.Estado = "ERROR"
-            mensaje.Mensaje = err.Error()
-            resp.Mensajes = append(resp.Mensajes, mensaje)
-          } else {
-            objID := bson.NewObjectId()
-          	item.ID = objID
-
-            // Intento el alta
-            collection := session.DB(config.DB_Name).C(config.DB_Rol)
-            err = collection.Insert(item)
-            if err != nil {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "OK" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "ERROR"
-                }
-              }
-              mensaje.Valor = item.Rol
-              mensaje.Estado = "ERROR"
-              s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-              mensaje.Mensaje = strings.Join(s, "")
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            } else {
-              if resp.EstadoGral != "PARCIAL" {
-                if resp.EstadoGral == "ERROR" {
-                  resp.EstadoGral = "PARCIAL"
-                } else {
-                  resp.EstadoGral = "OK"
-                }
-              }
-              mensaje.Valor = item.Rol
-              mensaje.Estado = "OK"
-              mensaje.Mensaje = "OK"
-              resp.Mensajes = append(resp.Mensajes, mensaje)
-            }
-          }
-        }
-      }
-      var httpStat int
-      if resp.EstadoGral == "OK" {
-        httpStat = http.StatusCreated
-      } else {
-        httpStat = http.StatusOK
-      }
-      respuesta, error := json.Marshal(resp)
-      core.FatalErr(error)
-      core.RespuestaJSON(w, req, start, respuesta, httpStat)
-      return
-    }
-  }
-}
-
-func RolExiste(rolExiste string) (error) {
-  var rol models.Rol
   // Genero una nueva sesión Mongo
-  session, err, _ := core.GetMongoSession()
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
   if err != nil {
-    return err
-  } else {
-    defer session.Close()
-    collection := session.DB(config.DB_Name).C(config.DB_Rol)
-
-    // Me aseguro el índice
-    index := mgo.Index{
-      Key:        []string{"rol"},
-      Unique:     true,
-      DropDups:   false,
-      Background: true,
-      Sparse:     true,
-    }
-    err := collection.EnsureIndex(index)
-    if err != nil {
-      s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
-
-    collection.Find(bson.M{"rol": rolExiste}).One(&rol)
-    if rol.ID == "" {
-      return nil
-    } else {
-      s := []string{"INVALID_PARAMS: El rol [", rolExiste,"] ya existe"}
-      return fmt.Errorf(strings.Join(s, ""))
-    }
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, permiso, false
   }
+  defer session.Close()
+
+  // Me aseguro el índice
+  // ********************
+  collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+  index := mgo.Index{
+    Key:        []string{"permiso"},
+    Unique:     true,
+    DropDups:   false,
+    Background: true,
+    Sparse:     true,
+  }
+  err = collection.EnsureIndex(index)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "EnsureIndex", strings.Join(s, ""), http.StatusInternalServerError, permiso, false
+  }
+
+  // Verifico si Existe
+  // ******************
+  collection.Find(bson.M{"permiso": permisoExiste}).One(&permiso)
+  // No existe
+  if permiso.ID == "" {
+    return "OK", "BuscarPermiso", "Ok", http.StatusOK, permiso, false
+  }
+  // Existe borrado
+  if permiso.Borrado == true {
+    s := []string{"INVALID_PARAMS: El permiso ", permisoExiste," ya existe borrada"}
+    return "ERROR", "BuscarPermiso", strings.Join(s, ""), http.StatusBadRequest, permiso, true
+  }
+  // Existe inactivo
+  if permiso.Activo == false {
+    s := []string{"INVALID_PARAMS: El permiso ", permisoExiste," ya existe inactiva"}
+    return "ERROR", "BuscarPermiso", strings.Join(s, ""), http.StatusBadRequest, permiso, true
+  }
+  // Existe
+  s := []string{"INVALID_PARAMS: El permiso ", permisoExiste," ya existe"}
+  return "ERROR", "BuscarPermiso", strings.Join(s, ""), http.StatusBadRequest, permiso, true
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Empresa
+func Permiso_X_ID(permisoID bson.ObjectId) (string, string, string, int, models.Permiso) {
+  var permiso models.Permiso
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, permiso
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(config.DB_Permiso)
+  collection.Find(bson.M{"_id": permisoID}).One(&permiso)
+  // No existe
+  if permiso.ID == "" {
+    s := []string{"INVALID_PARAMS: El permiso no existe"}
+    return "ERROR", "BuscarPermiso", strings.Join(s, ""), http.StatusBadRequest, permiso
+  }
+  // Existe
+  return "OK", "BuscarPermiso", "Ok", http.StatusOK, permiso
+}
+
+func RolCrear(w http.ResponseWriter, req *http.Request) {
+	var rol models.Rol
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&rol)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Doy de alta
+  // ***********
+  estado, valor, mensaje, httpStat, rol, existia := RolAlta(rol, req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+  if existia {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Agregó el rol ", rol.Rol}
+  core.RspMsgJSON(w, req, "OK", rol.Rol, strings.Join(s, ""), http.StatusCreated)
+  return
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
+func RolAlta(rolAlta models.Rol, req *http.Request) (string, string, string, int, models.Rol, bool) {
+	var rol models.Rol
+
+  // Verifico los campos obligatorios
+  // ********************************
+  if rolAlta.Rol == "" {
+    s := []string{"INVALID_PARAMS: rol no puede estar vacío"}
+    return "ERROR", "RolAlta", strings.Join(s, ""), http.StatusBadRequest, rol, false
+  }
+
+  // Me fijo si ya Existe
+  // ********************
+  estado, valor, mensaje, httpStat, rol, existia := RolExiste(rolAlta.Rol, rolAlta.Empresa_id)
+  if httpStat != http.StatusOK || existia == true {
+    return estado, valor, mensaje, httpStat, rol, existia
+  }
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, rol, false
+  }
+  defer session.Close()
+
+  // Intento el alta
+  // ***************
+  objID := bson.NewObjectId()
+  rol.ID = objID
+  rol.Rol = rolAlta.Rol
+  rol.Empresa_id = rolAlta.Empresa_id
+  rol.Permisos = rolAlta.Permisos
+  rol.Activo = rolAlta.Activo
+  rol.Timestamp = time.Now()
+  rol.Borrado = false
+  collection := session.DB(config.DB_Name).C(config.DB_Rol)
+  err = collection.Insert(rol)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "Insert Rol", strings.Join(s, ""), http.StatusInternalServerError, rol, false
+  }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, config.DB_Rol, rol.ID, "Alta", rol)
+  return "OK", "RolAlta", "Ok", http.StatusOK, rol, false
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection, Existía
+func RolExiste(rolExiste string, empresaExiste bson.ObjectId) (string, string, string, int, models.Rol, bool) {
+  var rol models.Rol
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, rol, false
+  }
+  defer session.Close()
+
+  // Me aseguro el índice
+  // ********************
+  collection := session.DB(config.DB_Name).C(config.DB_Rol)
+  index := mgo.Index{
+    Key:        []string{"empresa_id", "rol"},
+    Unique:     true,
+    DropDups:   false,
+    Background: true,
+    Sparse:     true,
+  }
+  err = collection.EnsureIndex(index)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", "EnsureIndex", strings.Join(s, ""), http.StatusInternalServerError, rol, false
+  }
+
+  // Verifico si Existe
+  // ******************
+  collection.Find(bson.M{"empresa_id": empresaExiste, "rol": rolExiste}).One(&rol)
+  // No existe
+  if rol.ID == "" {
+    return "OK", "BuscarPermiso", "Ok", http.StatusOK, rol, false
+  }
+  // Existe borrado
+  if rol.Borrado == true {
+    s := []string{"INVALID_PARAMS: El rol ", rolExiste," ya existe borrado"}
+    return "ERROR", "BuscarRol", strings.Join(s, ""), http.StatusBadRequest, rol, true
+  }
+  // Existe inactivo
+  if rol.Activo == false {
+    s := []string{"INVALID_PARAMS: El rol ", rolExiste," ya existe inactivo"}
+    return "ERROR", "BuscarRol", strings.Join(s, ""), http.StatusBadRequest, rol, true
+  }
+  // Existe
+  s := []string{"INVALID_PARAMS: El rol ", rolExiste," ya existe"}
+  return "ERROR", "BuscarRol", strings.Join(s, ""), http.StatusBadRequest, rol, true
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection
+func Rol_X_ID(rolID bson.ObjectId) (string, string, string, int, models.Rol) {
+  var rol models.Rol
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, rol
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(config.DB_Rol)
+  collection.Find(bson.M{"_id": rolID}).One(&rol)
+  // No existe
+  if rol.ID == "" {
+    s := []string{"INVALID_PARAMS: El rol no existe"}
+    return "ERROR", "BuscarRol", strings.Join(s, ""), http.StatusBadRequest, rol
+  }
+  // Existe
+  return "OK", "BuscarRol", "Ok", http.StatusOK, rol
 }
