@@ -21,8 +21,8 @@ func GetMongoSession() (*mgo.Session, error, int) {
       Addrs:    []string{config.DB_Host},
       Timeout:  config.DB_Timeout * time.Second,
       Database: config.DB_Name,
-      //Username: config.DB_User,
-      //Password: config.DB_Pass,
+      Username: config.DB_User,
+      Password: config.DB_Pass,
     }
 
     mgoSession, err = mgo.DialWithInfo(mongoDBDialInfo)
