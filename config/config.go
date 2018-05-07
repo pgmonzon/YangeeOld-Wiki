@@ -13,17 +13,31 @@ const(
   // Consola
   MostarEnConsola = true
   RegistrarCicloDeVida = true
+  Produccion = false
 
-  // Base de datos
-  //DB_Host = "localhost"
-  DB_Host = "198.100.45.12:27017"
-  //DB_Host = "mongodb://yng_user:laser@ds021326.mlab.com:21326/yangee"
+  // Ambiente producción
+  // *******************
+  //DB_Host = "198.100.45.12:27017"
+  DB_Host = "localhost"
   DB_Name = "yangee"
   DB_User = "yngee"
   DB_Pass = "1962Laser"
   DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transaction"
-
+  privKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
+  pubKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
+/*
+  // Ambiente Desarrollo
+  // *******************
+  DB_Host = "localhost"
+  DB_Name = "yangee"
+  DB_User = ""
+  DB_Pass = ""
+  DB_Timeout = 10 // valor en minutos
+  DB_Transaction = "transaction"
+  privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
+  pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
+*/
   DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Audit = "audit" // auditoría
   DB_Modulo = "modulos" // módulos del sistema
@@ -39,12 +53,9 @@ const(
   DB_BasicoSindicato = "basicoSindicatos"
   DB_Unidad = "unidades"
   DB_Personal = "personal"
+  DB_Locacion = "locaciones"
 
   // jwt
-  //privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
-  //pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-  privKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
-  pubKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
