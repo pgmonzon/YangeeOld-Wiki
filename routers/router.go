@@ -135,6 +135,17 @@ func InicializarRutas() {
 	router.HandleFunc("/cliente/{docID}", handlers.ValidarMiddleware(handlers.ClienteTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/clientes/{orden}/{limite}", handlers.ValidarMiddleware(handlers.ClientesTraer, "NO_VALIDAR")).Methods("POST")
 
+	// Transportistas
+	// **************
+	router.HandleFunc("/transportista", handlers.ValidarMiddleware(handlers.TransportistaCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/transportista/{docID}", handlers.ValidarMiddleware(handlers.TransportistaGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/transportistaHabilitar/{docID}", handlers.ValidarMiddleware(handlers.TransportistaHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/transportistaDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.TransportistaDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/transportista/{docID}", handlers.ValidarMiddleware(handlers.TransportistaBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/transportistaRecuperar/{docID}", handlers.ValidarMiddleware(handlers.TransportistaRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/transportista/{docID}", handlers.ValidarMiddleware(handlers.TransportistaTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/transportistas/{orden}/{limite}", handlers.ValidarMiddleware(handlers.TransportistasTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
