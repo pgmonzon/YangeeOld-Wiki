@@ -124,6 +124,17 @@ func InicializarRutas() {
 	router.HandleFunc("/locacion/{docID}", handlers.ValidarMiddleware(handlers.LocacionTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/locaciones/{orden}/{limite}", handlers.ValidarMiddleware(handlers.LocacionesTraer, "NO_VALIDAR")).Methods("POST")
 
+	// Clientes
+	// ********
+	router.HandleFunc("/cliente", handlers.ValidarMiddleware(handlers.ClienteCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/cliente/{docID}", handlers.ValidarMiddleware(handlers.ClienteGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/clienteHabilitar/{docID}", handlers.ValidarMiddleware(handlers.ClienteHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/clienteDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.ClienteDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/cliente/{docID}", handlers.ValidarMiddleware(handlers.ClienteBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/clienteRecuperar/{docID}", handlers.ValidarMiddleware(handlers.ClienteRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/cliente/{docID}", handlers.ValidarMiddleware(handlers.ClienteTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/clientes/{orden}/{limite}", handlers.ValidarMiddleware(handlers.ClientesTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})

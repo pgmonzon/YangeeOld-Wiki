@@ -14,7 +14,7 @@ const(
   MostarEnConsola = true
   RegistrarCicloDeVida = true
   Produccion = false
-
+/*
   // Ambiente producción
   // *******************
   //DB_Host = "198.100.45.12:27017"
@@ -26,7 +26,7 @@ const(
   DB_Transaction = "transaction"
   privKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-/*
+*/
   // Ambiente Desarrollo
   // *******************
   DB_Host = "localhost"
@@ -37,7 +37,7 @@ const(
   DB_Transaction = "transaction"
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-*/
+
   DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Audit = "audit" // auditoría
   DB_Modulo = "modulos" // módulos del sistema
@@ -54,6 +54,7 @@ const(
   DB_Unidad = "unidades"
   DB_Personal = "personal"
   DB_Locacion = "locaciones"
+  DB_Cliente = "clientes"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
