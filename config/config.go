@@ -54,6 +54,8 @@ const(
   DB_Unidad = "unidades"
   DB_Personal = "personal"
   DB_Locacion = "locaciones"
+  DB_Cliente = "clientes"
+  DB_Transportista = "transportistas"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
