@@ -575,7 +575,7 @@ func ClienteModificar(documentoID bson.ObjectId, documentoModi models.Cliente, r
   //---------------Modificar ######
   if documentoModi.Cliente == "" {
     s := []string{camposVacios}
-    return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
+    return "ERROR", "Modificar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
 
   // Me fijo si ya Existe la clave única

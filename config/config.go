@@ -14,7 +14,7 @@ const(
   MostarEnConsola = true
   RegistrarCicloDeVida = true
   Produccion = false
-
+/*
   // Ambiente producción
   // *******************
   //DB_Host = "198.100.45.12:27017"
@@ -26,7 +26,7 @@ const(
   DB_Transaction = "transaction"
   privKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-/*
+*/
   // Ambiente Desarrollo
   // *******************
   DB_Host = "localhost"
@@ -37,7 +37,7 @@ const(
   DB_Transaction = "transaction"
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-*/
+
   DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Audit = "audit" // auditoría
   DB_Modulo = "modulos" // módulos del sistema
@@ -56,20 +56,19 @@ const(
   DB_Locacion = "locaciones"
   DB_Cliente = "clientes"
   DB_Transportista = "transportistas"
+  DB_Viaje = "viajes"
+  DB_Autorizacion = "autorizaciones"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
   ExpiraTokenAut = 100000 // en minutos - Expiración del token de autorización
   Aes = "AES256Key-32Characters1234567890"
-
-  // Timestamp layout
-  TimestampLayout = "2006-01-02T15:04:05.000Z"
 )
 
 var (
 	VerifyKey       *rsa.PublicKey
 	SignKey         *rsa.PrivateKey
-  UsuarioActivoID bson.ObjectId
+  FakeID          bson.ObjectId
 )
 
 func fatal(err error) {
@@ -90,4 +89,8 @@ func Inicializar() {
 
 	VerifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 	fatal(err)
+
+  // config.FakeID
+  FakeID = bson.ObjectIdHex("111111111111111111111111")
+
 }
