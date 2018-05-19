@@ -520,8 +520,8 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
   var documentos []models.Viaje
   coll := config.DB_Viaje
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
-  fechaDesde := time.Date(ano, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
-  fechaHasta := time.Date(ano, time.Month(mes), dia, 23, 59, 59, 999999999, time.UTC)
+  //fechaDesde := time.Date(ano, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
+  //fechaHasta := time.Date(ano, time.Month(mes), dia, 23, 59, 59, 999999999, time.UTC)
 
   // Genero una nueva sesión Mongo
   // *****************************
@@ -536,7 +536,7 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
   //----------Modificar ###### en forma manual
   selector := bson.M{
     "empresa_id": empresaID,
-    "fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
+    //"fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
   }
   collection := session.DB(config.DB_Name).C(coll)
   collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
