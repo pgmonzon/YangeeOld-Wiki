@@ -41,9 +41,7 @@ func ViajeCrear(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Agregaste ", documento.Cliente}
-  //--------------------------------------Modificar ######
+  s := []string{"Agregaste un viaje para ", documento.Cliente}
   core.RspMsgJSON(w, req, "OK", documento.Cliente, strings.Join(s, ""), http.StatusCreated)
   return
 }
@@ -339,16 +337,12 @@ func ViajeGuardar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Guardaste ", documento.Cliente}
-  //--------------------------------------Modificar ######
+  s := []string{"Guardaste el viaje de ", documento.Cliente}
   core.RspMsgJSON(w, req, "OK", documento.Cliente, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat
 func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *http.Request, audit string) (string, string, string, int) {
-  //-------------------Modificar ###### las 2 variables
   coll := config.DB_Viaje
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
@@ -367,25 +361,11 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
     return "ERROR", "Modificar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
 
-  // Establezco los campos que podrían cambiar de acuerdo al paso siguiente
-  // **********************************************************************
-  documentoModi.TarifarioCliente = documentoExistente.TarifarioCliente
-  documentoModi.TarifaValor = documentoExistente.TarifaValor
-  documentoModi.ValorViaje = documentoExistente.ValorViaje
-  documentoModi.AutValorViaje_id = documentoExistente.AutValorViaje_id
-  documentoModi.AutValor = documentoExistente.AutValor
-  documentoModi.AutValorViajeFecha = documentoExistente.AutValorViajeFecha
-  documentoModi.TarifarioTransportista = documentoExistente.TarifarioTransportista
-  documentoModi.TarifaCosto = documentoExistente.TarifaCosto
-  documentoModi.CostoViaje = documentoExistente.CostoViaje
-  documentoModi.AutCostoViaje_id = documentoExistente.AutCostoViaje_id
-  documentoModi.AutCosto = documentoExistente.AutCosto
-  documentoModi.AutCostoViajeFecha = documentoExistente.AutCostoViajeFecha
-
   // Si cambia alguno de los valores que modifica las tarifas
   // la recalculo y blanqueo las autorizaciones
   // ********************************************************
-  if documentoExistente.Kilometraje != documentoModi.Kilometraje || documentoExistente.TipoUnidad_id != documentoModi.TipoUnidad_id || documentoExistente.Recorrido != documentoModi.Recorrido {
+
+  if documentoExistente.Kilometraje != documentoModi.Kilometraje || documentoExistente.TipoUnidad_id != documentoModi.TipoUnidad_id || documentoExistente.Recorrido != documentoModi.Recorrido || documentoExistente.Cliente_id != documentoModi.Cliente_id || documentoExistente.Transportista_id != documentoModi.Transportista_id {
     // Obtengo la tarifa del cliente
     // *****************************
     tarifarioCliente, tarifaValor := TarifaCliente(documentoModi, req)
@@ -406,32 +386,19 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
     documentoModi.AutCostoViaje_id = config.FakeID // por defecto lo pongo en vacío el usuario
     documentoModi.AutCosto = "" // por defecto en vacío el usuario
     documentoModi.AutCostoViajeFecha = time.Time{} // por defecto en vacío
-  }
-
-  if documentoExistente.Cliente_id != documentoModi.Cliente_id {
-    // Obtengo la tarifa del cliente
-    // *****************************
-    tarifarioCliente, tarifaValor := TarifaCliente(documentoModi, req)
-
-    documentoModi.TarifarioCliente = tarifarioCliente
-    documentoModi.TarifaValor = tarifaValor
-    documentoModi.ValorViaje = tarifaValor // en el alta va el mismo que el tarifado
-    documentoModi.AutValorViaje_id = config.FakeID // por defecto lo pongo en vacío el usuario
-    documentoModi.AutValor = "" // por defecto en vacío el usuario
-    documentoModi.AutValorViajeFecha = time.Time{} // por defecto en vacío
-  }
-
-  if documentoExistente.Transportista_id != documentoModi.Transportista_id {
-    // Obtengo la tarifa del transportista
-    // ***********************************
-    tarifarioTransportista, tarifaCosto := TarifaTransportista(documentoModi, req)
-
-    documentoModi.TarifarioTransportista = tarifarioTransportista
-    documentoModi.TarifaCosto = tarifaCosto
-    documentoModi.CostoViaje = tarifaCosto // en el alta va el mismo que el tarifado
-    documentoModi.AutCostoViaje_id = config.FakeID // por defecto lo pongo en vacío el usuario
-    documentoModi.AutCosto = "" // por defecto en vacío el usuario
-    documentoModi.AutCostoViajeFecha = time.Time{} // por defecto en vacío
+  } else {
+    documentoModi.TarifarioCliente = documentoExistente.TarifarioCliente
+    documentoModi.TarifaValor = documentoExistente.TarifaValor
+    documentoModi.ValorViaje = documentoExistente.ValorViaje
+    documentoModi.AutValorViaje_id = documentoExistente.AutValorViaje_id
+    documentoModi.AutValor = documentoExistente.AutValor
+    documentoModi.AutValorViajeFecha = documentoExistente.AutValorViajeFecha
+    documentoModi.TarifarioTransportista = documentoExistente.TarifarioTransportista
+    documentoModi.TarifaCosto = documentoExistente.TarifaCosto
+    documentoModi.CostoViaje = documentoExistente.CostoViaje
+    documentoModi.AutCostoViaje_id = documentoExistente.AutCostoViaje_id
+    documentoModi.AutCosto = documentoExistente.AutCosto
+    documentoModi.AutCostoViajeFecha = documentoExistente.AutCostoViajeFecha
   }
 
   // Genero una nueva sesión Mongo
@@ -444,7 +411,6 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
 
   // Intento la modificación
   // ***********************
-  //-------------------Modificar ###### en forma manual
   documentoModi.ID = documentoID
   documentoModi.Empresa_id = empresaID
   collection := session.DB(config.DB_Name).C(coll)
@@ -453,19 +419,20 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
     "$set": bson.M{
       "fechaHora": documentoModi.FechaHora,
       "cliente_id": documentoModi.Cliente_id,
-    	"cliente": documentoModi.Cliente,
-    	"tipoUnidad_id": documentoModi.TipoUnidad_id,
-    	"tipoUnidad": documentoModi.TipoUnidad,
-    	"transportista_id": documentoModi.Transportista_id,
-    	"transportista": documentoModi.Transportista,
-    	"unidad_id": documentoModi.Unidad_id,
-    	"unidad": documentoModi.Unidad,
-    	"personal_id": documentoModi.Personal_id,
-    	"personal": documentoModi.Personal,
-    	"peajes": documentoModi.Peajes,
-    	"observaciones": documentoModi.Observaciones,
-    	"kilometraje": documentoModi.Kilometraje,
-    	"paradas": documentoModi.Paradas,
+      "cliente": documentoModi.Cliente,
+      "tipoUnidad_id": documentoModi.TipoUnidad_id,
+      "tipoUnidad": documentoModi.TipoUnidad,
+      "transportista_id": documentoModi.Transportista_id,
+      "transportista": documentoModi.Transportista,
+      "unidad_id": documentoModi.Unidad_id,
+      "unidad": documentoModi.Unidad,
+      "personal_id": documentoModi.Personal_id,
+      "personal": documentoModi.Personal,
+      "paradas": documentoModi.Paradas,
+      "recorrido": RecorridoPuntas(documentoModi),
+      "kilometraje": documentoModi.Kilometraje,
+      "peajes": documentoModi.Peajes,
+      "observaciones": documentoModi.Observaciones,
       "tarifarioCliente": documentoModi.TarifarioCliente,
       "tarifaValor": documentoModi.TarifaValor,
       "valorViaje": documentoModi.ValorViaje,
@@ -478,7 +445,6 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
       "autCostoViaje_id": documentoModi.AutCostoViaje_id,
       "autCosto": documentoModi.AutCosto,
       "autCostoViajeFecha": documentoModi.AutCostoViajeFecha,
-      "recorrido": RecorridoPuntas(documentoModi),
       "timestamp": time.Now(),
     },
   }
@@ -554,8 +520,8 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
   var documentos []models.Viaje
   coll := config.DB_Viaje
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
-  //fechaDesde := time.Date(ano, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
-  //fechaHasta := time.Date(ano, time.Month(mes), dia, 23, 59, 59, 999999999, time.UTC)
+  fechaDesde := time.Date(ano, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
+  fechaHasta := time.Date(ano, time.Month(mes), dia, 23, 59, 59, 999999999, time.UTC)
 
   // Genero una nueva sesión Mongo
   // *****************************
@@ -570,7 +536,7 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
   //----------Modificar ###### en forma manual
   selector := bson.M{
     "empresa_id": empresaID,
-    //"fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
+    "fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
   }
   collection := session.DB(config.DB_Name).C(coll)
   collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
