@@ -398,6 +398,10 @@ func PersonalHabilitar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Apellido = documentoExistente.Apellido
   documento.Nombre = documentoExistente.Nombre
+  documento.Celular = documentoExistente.Celular
+  documento.Direccion = documentoExistente.Direccion
+  documento.Latitud = documentoExistente.Latitud
+  documento.Longitud = documentoExistente.Longitud
   documento.Categoria_id = documentoExistente.Categoria_id
   documento.Propio = documentoExistente.Propio
   documento.BasicoSindicato_id = documentoExistente.BasicoSindicato_id
@@ -405,6 +409,8 @@ func PersonalHabilitar(w http.ResponseWriter, req *http.Request) {
   documento.Curso = documentoExistente.Curso
   documento.LNH = documentoExistente.LNH
   documento.Registro = documentoExistente.Registro
+  documento.FechaAlta = documentoExistente.FechaAlta
+  documento.FechaBaja = documentoExistente.FechaBaja
   documento.Activo = true
   documento.Borrado = documentoExistente.Borrado
 
@@ -452,6 +458,10 @@ func PersonalDeshabilitar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Apellido = documentoExistente.Apellido
   documento.Nombre = documentoExistente.Nombre
+  documento.Celular = documentoExistente.Celular
+  documento.Direccion = documentoExistente.Direccion
+  documento.Latitud = documentoExistente.Latitud
+  documento.Longitud = documentoExistente.Longitud
   documento.Categoria_id = documentoExistente.Categoria_id
   documento.Propio = documentoExistente.Propio
   documento.BasicoSindicato_id = documentoExistente.BasicoSindicato_id
@@ -459,6 +469,8 @@ func PersonalDeshabilitar(w http.ResponseWriter, req *http.Request) {
   documento.Curso = documentoExistente.Curso
   documento.LNH = documentoExistente.LNH
   documento.Registro = documentoExistente.Registro
+  documento.FechaAlta = documentoExistente.FechaAlta
+  documento.FechaBaja = documentoExistente.FechaBaja
   documento.Activo = false
   documento.Borrado = documentoExistente.Borrado
 
@@ -506,6 +518,10 @@ func PersonalBorrar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Apellido = documentoExistente.Apellido
   documento.Nombre = documentoExistente.Nombre
+  documento.Celular = documentoExistente.Celular
+  documento.Direccion = documentoExistente.Direccion
+  documento.Latitud = documentoExistente.Latitud
+  documento.Longitud = documentoExistente.Longitud
   documento.Categoria_id = documentoExistente.Categoria_id
   documento.Propio = documentoExistente.Propio
   documento.BasicoSindicato_id = documentoExistente.BasicoSindicato_id
@@ -513,6 +529,8 @@ func PersonalBorrar(w http.ResponseWriter, req *http.Request) {
   documento.Curso = documentoExistente.Curso
   documento.LNH = documentoExistente.LNH
   documento.Registro = documentoExistente.Registro
+  documento.FechaAlta = documentoExistente.FechaAlta
+  documento.FechaBaja = documentoExistente.FechaBaja
   documento.Activo = documentoExistente.Activo
   documento.Borrado = true
 
@@ -560,6 +578,10 @@ func PersonalRecuperar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Apellido = documentoExistente.Apellido
   documento.Nombre = documentoExistente.Nombre
+  documento.Celular = documentoExistente.Celular
+  documento.Direccion = documentoExistente.Direccion
+  documento.Latitud = documentoExistente.Latitud
+  documento.Longitud = documentoExistente.Longitud
   documento.Categoria_id = documentoExistente.Categoria_id
   documento.Propio = documentoExistente.Propio
   documento.BasicoSindicato_id = documentoExistente.BasicoSindicato_id
@@ -567,6 +589,8 @@ func PersonalRecuperar(w http.ResponseWriter, req *http.Request) {
   documento.Curso = documentoExistente.Curso
   documento.LNH = documentoExistente.LNH
   documento.Registro = documentoExistente.Registro
+  documento.FechaAlta = documentoExistente.FechaAlta
+  documento.FechaBaja = documentoExistente.FechaBaja
   documento.Activo = documentoExistente.Activo
   documento.Borrado = false
 
@@ -633,6 +657,10 @@ func PersonalModificar(documentoID bson.ObjectId, documentoModi models.Personal,
     "$set": bson.M{
       "apellido": documentoModi.Apellido,
       "nombre": documentoModi.Nombre,
+      "celular": documentoModi.Celular,
+      "direccion": documentoModi.Direccion,
+      "latitud": documentoModi.Latitud,
+      "longitud": documentoModi.Longitud,
       "categoria_id": documentoModi.Categoria_id,
       "propio": documentoModi.Propio,
       "basicoSindicato_id": documentoModi.BasicoSindicato_id,
@@ -640,6 +668,8 @@ func PersonalModificar(documentoID bson.ObjectId, documentoModi models.Personal,
       "curso": documentoModi.Curso,
       "lnh": documentoModi.LNH,
       "registro": documentoModi.Registro,
+      "fechaAlta": documentoModi.FechaAlta,
+      "fechaBaja": documentoModi.FechaBaja,
       "activo": documentoModi.Activo,
       "borrado": documentoModi.Borrado,
       "timestamp": time.Now(),
