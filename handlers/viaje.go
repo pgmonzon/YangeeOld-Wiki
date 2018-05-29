@@ -96,6 +96,7 @@ func ViajeAlta(documentoAlta models.Viaje, req *http.Request, audit string) (str
   documento.CanceladoFecha = time.Time{} // por defecto en vacío
   documento.CanceladoObser = "" // por defecto en vacío
   documento.Remitos = false // por defecto en false cuando se reciben los remitos cambia
+  documento.RemitosDetalle = ""
   documento.Remitos_id = config.FakeID // por defecto lo pongo en vacío el usuario
   documento.RemitosUsuario = ""
   documento.RemitosFecha = time.Time{}
@@ -418,6 +419,7 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
   updator := bson.M{
     "$set": bson.M{
       "fechaHora": documentoModi.FechaHora,
+      "vuelta": documentoModi.Vuelta,
       "cliente_id": documentoModi.Cliente_id,
       "cliente": documentoModi.Cliente,
       "tipoUnidad_id": documentoModi.TipoUnidad_id,
@@ -428,10 +430,16 @@ func ViajeModificar(documentoID bson.ObjectId, documentoModi models.Viaje, req *
       "unidad": documentoModi.Unidad,
       "personal_id": documentoModi.Personal_id,
       "personal": documentoModi.Personal,
+      "celular": documentoModi.Celular,
+      "tipo": documentoModi.Tipo,
       "paradas": documentoModi.Paradas,
       "recorrido": RecorridoPuntas(documentoModi),
       "kilometraje": documentoModi.Kilometraje,
+      "regreso": documentoModi.Regreso,
       "peajes": documentoModi.Peajes,
+      "adicional": documentoModi.Adicional,
+      "importe": documentoModi.Importe,
+      "remitosDetalle": documentoModi.RemitosDetalle,
       "observaciones": documentoModi.Observaciones,
       "tarifarioCliente": documentoModi.TarifarioCliente,
       "tarifaValor": documentoModi.TarifaValor,
