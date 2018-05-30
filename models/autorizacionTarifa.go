@@ -21,7 +21,7 @@ type Autorizaciones struct {
   Titular			         	    string          `bson:"titular" json:"titular"`
 	ImporteTarifario					float64         `bson:"importeTarifario" json:"importeTarifario"`
 	ImporteSugerido						float64         `bson:"importeSugerido" json:"importeSugerido"`
-	Autorizante_id            bson.ObjectId   `bson:"autorizante_id" json:"solicitante_id"`
+	Autorizante_id            bson.ObjectId   `bson:"autorizante_id" json:"autorizante_id"`
   Autorizante		            string          `bson:"autorizante" json:"autorizante"`
   AutorizanteFecha          time.Time       `bson:"autorizanteFecha" json:"autorizanteFecha"`
 	ImporteAutorizado					float64         `bson:"importeAutorizado" json:"importeAutorizado"`
