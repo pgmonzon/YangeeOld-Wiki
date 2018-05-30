@@ -34,7 +34,7 @@ const(
   DB_User = ""
   DB_Pass = ""
   DB_Timeout = 10 // valor en minutos
-  DB_Transaction = "transaction"
+  DB_Transaction = "transacciones"
   privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
 */

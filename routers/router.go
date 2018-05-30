@@ -153,8 +153,15 @@ func InicializarRutas() {
 	router.HandleFunc("/viajes/{ano}/{mes}/{dia}", handlers.ValidarMiddleware(handlers.ViajesTraer, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeCancelar/{docID}", handlers.ValidarMiddleware(handlers.ViajeCancelar, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeRemitos/{docID}", handlers.ValidarMiddleware(handlers.ViajeRemitos, "NO_VALIDAR")).Methods("PUT")
+
+	// Autorizaciones
+	// **************
 	router.HandleFunc("/viajeAutValor/{docID}", handlers.ValidarMiddleware(handlers.ViajeAutValor, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeAutCosto/{docID}", handlers.ValidarMiddleware(handlers.ViajeAutCosto, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/autorizaciones", handlers.ValidarMiddleware(handlers.AutorizacionesTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/autorizacion/{docID}", handlers.ValidarMiddleware(handlers.AutorizacionTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/autorizacionRechazar/{docID}", handlers.ValidarMiddleware(handlers.AutorizacionRechazar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/autorizacionAutorizar/{docID}", handlers.ValidarMiddleware(handlers.AutorizacionAutorizar, "NO_VALIDAR")).Methods("PUT")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
