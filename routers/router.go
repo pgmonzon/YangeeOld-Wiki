@@ -153,6 +153,7 @@ func InicializarRutas() {
 	router.HandleFunc("/viajes/{ano}/{mes}/{dia}", handlers.ValidarMiddleware(handlers.ViajesTraer, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeCancelar/{docID}", handlers.ValidarMiddleware(handlers.ViajeCancelar, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeRemitos/{docID}", handlers.ValidarMiddleware(handlers.ViajeRemitos, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/viajesFacturar/{docID}", handlers.ValidarMiddleware(handlers.ViajesFacturar, "NO_VALIDAR")).Methods("POST")
 
 	// Autorizaciones
 	// **************
@@ -163,9 +164,14 @@ func InicializarRutas() {
 	router.HandleFunc("/autorizacionRechazar/{docID}", handlers.ValidarMiddleware(handlers.AutorizacionRechazar, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/autorizacionAutorizar/{docID}", handlers.ValidarMiddleware(handlers.AutorizacionAutorizar, "NO_VALIDAR")).Methods("PUT")
 
+	// Facturas
+	// ********
+	router.HandleFunc("/factura", handlers.ValidarMiddleware(handlers.FacturaCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/factura/{docID}", handlers.ValidarMiddleware(handlers.FacturaTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/facturas", handlers.ValidarMiddleware(handlers.FacturasTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
 	log.Fatal(http.ListenAndServe(":3113", gorillaHnd.CORS(allowedOrigins, allowedMethods, allowedHeaders)(router)))
-	//log.Fatal(http.ListenAndServe(":3113", router))
 }
