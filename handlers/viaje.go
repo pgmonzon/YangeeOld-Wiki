@@ -814,3 +814,69 @@ func ViajesFacturar_X_Cliente(documentoID bson.ObjectId, audit string, req *http
   // ************
   return "OK", audit, "Ok", http.StatusOK, documentos
 }
+
+func ViajesLiquidar(w http.ResponseWriter, req *http.Request) {
+  var documentos []models.Viaje
+  vars := mux.Vars(req)
+  ID := vars["docID"]
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco
+  // *****
+  estado, valor, mensaje, httpStat, documentos := ViajesLiquidar_X_Transportista(documentoID, "Buscar", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documentos)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func ViajesLiquidar_X_Transportista(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, []models.Viaje) {
+  var documentos []models.Viaje
+  coll := config.DB_Viaje
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentos
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "transportista_id": documentoID,
+    "estado": "Cerrado",
+    "remitos": true,
+    "editable": false,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
+
+  // Si el resultado es vacío devuelvo ERROR
+  // ***************************************
+  if len(documentos) == 0 {
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
+  }
+
+  // Está todo Ok
+  // ************
+  return "OK", audit, "Ok", http.StatusOK, documentos
+}

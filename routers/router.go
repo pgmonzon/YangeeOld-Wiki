@@ -154,6 +154,7 @@ func InicializarRutas() {
 	router.HandleFunc("/viajeCancelar/{docID}", handlers.ValidarMiddleware(handlers.ViajeCancelar, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeRemitos/{docID}", handlers.ValidarMiddleware(handlers.ViajeRemitos, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/viajesFacturar/{docID}", handlers.ValidarMiddleware(handlers.ViajesFacturar, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/viajesLiquidar/{docID}", handlers.ValidarMiddleware(handlers.ViajesLiquidar, "NO_VALIDAR")).Methods("POST")
 
 	// Autorizaciones
 	// **************
