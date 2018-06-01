@@ -170,6 +170,12 @@ func InicializarRutas() {
 	router.HandleFunc("/factura/{docID}", handlers.ValidarMiddleware(handlers.FacturaTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/facturas", handlers.ValidarMiddleware(handlers.FacturasTraer, "NO_VALIDAR")).Methods("POST")
 
+	// Liquidaciones
+	// *************
+	router.HandleFunc("/liquidacion", handlers.ValidarMiddleware(handlers.LiquidacionCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/liquidacion/{docID}", handlers.ValidarMiddleware(handlers.LiquidacionTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/liquidaciones", handlers.ValidarMiddleware(handlers.LiquidacionesTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
