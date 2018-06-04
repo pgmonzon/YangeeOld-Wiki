@@ -642,9 +642,9 @@ func ViajeCancel(documentoID bson.ObjectId, obser models.CanceladoObser, req *ht
     "$set": bson.M{
       "estado": "Cancelado",
       "cancelado_id": usuarioID,
-      "canceladousuario": usuario,
-      "canceladofecha": time.Now(),
-      "canceladoobser": obser.Observacion,
+      "canceladoUsuario": usuario,
+      "canceladoFecha": time.Now(),
+      "canceladoObser": obser.Observacion,
       "editable": false,
       "timestamp": time.Now(),
     },
