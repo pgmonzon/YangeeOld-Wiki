@@ -170,40 +170,32 @@ func TarifaCliente(documento models.Viaje, req *http.Request) (string, float64) 
       if strings.ToUpper(item.Tipo) == "KILOMETRAJE" {
         if documento.Kilometraje > 0 {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-            tarifarioCliente = item.Tarifario
-            tarifaValor = item.Importe * float64(documento.Kilometraje)
-            return tarifarioCliente, tarifaValor
+            if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+              tarifarioCliente = item.Tarifario
+              tarifaValor = item.Importe * float64(documento.Kilometraje)
+              return tarifarioCliente, tarifaValor
+            }
           }
         }
       }
       if strings.ToUpper(item.Tipo) == "RANGO KILOMETRAJE" {
         if documento.Kilometraje > 0 && documento.Kilometraje >= item.KmDesde && documento.Kilometraje <= item.KmHasta {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-            tarifarioCliente = item.Tarifario
-            tarifaValor = item.Importe
-            return tarifarioCliente, tarifaValor
+            if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+              tarifarioCliente = item.Tarifario
+              tarifaValor = item.Importe
+              return tarifarioCliente, tarifaValor
+            }
           }
         }
       }
       if strings.ToUpper(item.Tipo) == "RECORRIDO" {
         if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-          encontrados := 0
-          for _, itemTar := range item.Recorrido {
-            encontrados = 0
-            for _, itemVia := range documento.Paradas {
-              if itemTar.Locacion_id == itemVia.Locacion_id {
-                encontrados = 1
-                break
-              }
-            }
-            if encontrados == 0 {
-              break
-            }
-          }
-          if encontrados == 1 {
-            for _, itemVia := range documento.Paradas {
+          if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+            encontrados := 0
+            for _, itemTar := range item.Recorrido {
               encontrados = 0
-              for _, itemTar := range item.Recorrido {
+              for _, itemVia := range documento.Paradas {
                 if itemTar.Locacion_id == itemVia.Locacion_id {
                   encontrados = 1
                   break
@@ -213,11 +205,25 @@ func TarifaCliente(documento models.Viaje, req *http.Request) (string, float64) 
                 break
               }
             }
-          }
-          if encontrados == 1 {
-            tarifarioCliente = item.Tarifario
-            tarifaValor = item.Importe
-            return tarifarioCliente, tarifaValor
+            if encontrados == 1 {
+              for _, itemVia := range documento.Paradas {
+                encontrados = 0
+                for _, itemTar := range item.Recorrido {
+                  if itemTar.Locacion_id == itemVia.Locacion_id {
+                    encontrados = 1
+                    break
+                  }
+                }
+                if encontrados == 0 {
+                  break
+                }
+              }
+            }
+            if encontrados == 1 {
+              tarifarioCliente = item.Tarifario
+              tarifaValor = item.Importe
+              return tarifarioCliente, tarifaValor
+            }
           }
         }
       }
@@ -247,40 +253,32 @@ func TarifaTransportista(documento models.Viaje, req *http.Request) (string, flo
       if strings.ToUpper(item.Tipo) == "KILOMETRAJE" {
         if documento.Kilometraje > 0 {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-            tarifarioTransportista = item.Tarifario
-            tarifaCosto = item.Importe * float64(documento.Kilometraje)
-            return tarifarioTransportista, tarifaCosto
+            if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+              tarifarioTransportista = item.Tarifario
+              tarifaCosto = item.Importe * float64(documento.Kilometraje)
+              return tarifarioTransportista, tarifaCosto
+            }
           }
         }
       }
       if strings.ToUpper(item.Tipo) == "RANGO KILOMETRAJE" {
         if documento.Kilometraje > 0 && documento.Kilometraje >= item.KmDesde && documento.Kilometraje <= item.KmHasta {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-            tarifarioTransportista = item.Tarifario
-            tarifaCosto = item.Importe
-            return tarifarioTransportista, tarifaCosto
+            if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+              tarifarioTransportista = item.Tarifario
+              tarifaCosto = item.Importe
+              return tarifarioTransportista, tarifaCosto
+            }
           }
         }
       }
       if strings.ToUpper(item.Tipo) == "RECORRIDO" {
         if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
-          encontrados := 0
-          for _, itemTar := range item.Recorrido {
-            encontrados = 0
-            for _, itemVia := range documento.Paradas {
-              if itemTar.Locacion_id == itemVia.Locacion_id {
-                encontrados = 1
-                break
-              }
-            }
-            if encontrados == 0 {
-              break
-            }
-          }
-          if encontrados == 1 {
-            for _, itemVia := range documento.Paradas {
+          if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
+            encontrados := 0
+            for _, itemTar := range item.Recorrido {
               encontrados = 0
-              for _, itemTar := range item.Recorrido {
+              for _, itemVia := range documento.Paradas {
                 if itemTar.Locacion_id == itemVia.Locacion_id {
                   encontrados = 1
                   break
@@ -290,11 +288,25 @@ func TarifaTransportista(documento models.Viaje, req *http.Request) (string, flo
                 break
               }
             }
-          }
-          if encontrados == 1 {
-            tarifarioTransportista = item.Tarifario
-            tarifaCosto = item.Importe
-            return tarifarioTransportista, tarifaCosto
+            if encontrados == 1 {
+              for _, itemVia := range documento.Paradas {
+                encontrados = 0
+                for _, itemTar := range item.Recorrido {
+                  if itemTar.Locacion_id == itemVia.Locacion_id {
+                    encontrados = 1
+                    break
+                  }
+                }
+                if encontrados == 0 {
+                  break
+                }
+              }
+            }
+            if encontrados == 1 {
+              tarifarioTransportista = item.Tarifario
+              tarifaCosto = item.Importe
+              return tarifarioTransportista, tarifaCosto
+            }
           }
         }
       }

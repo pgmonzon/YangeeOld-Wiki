@@ -83,6 +83,7 @@ func LiquidacionAlta(documentoAlta models.Liquidacion, req *http.Request, audit 
     selector := bson.M{"_id": item.Viaje_id, "empresa_id": empresaID}
     updator := bson.M{
       "$set": bson.M{
+        "estado": "Liquidado",
         "liquidacion_id": documento.ID,
         "liquidacion": documento.Liquidacion,
         "fechaLiquidacion": documento.FechaLiquidacion,

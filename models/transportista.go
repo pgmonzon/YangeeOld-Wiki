@@ -11,6 +11,7 @@ type Transportista struct {
 	Empresa_id			bson.ObjectId		`bson:"empresa_id" json:"empresa_id,omitempty"`
 	Transportista		string        	`bson:"transportista" json:"transportista"`
   Mail            string          `json:"mail"`
+	Factura					string					`json: "factura"` // A / C
 	Contactos				[]ContactoTran	`json:"contactos,omitempty"`
 	Tarifarios			[]TarifarioTran	`json:"tarifarios,omitempty"`
 	Activo					bool   					`json:"activo"`
@@ -28,6 +29,8 @@ type TarifarioTran struct {
 	Tarifario				string					`json:"tarifario"`
 	Tipo						string					`json:"tipo"` // Recorrido - Kilometraje - Rango Kilometraje
 	TipoUnidad_id		bson.ObjectId		`bson:"tipoUnidad_id" json:"tipoUnidad_id,omitempty"`
+	Vuelta					string					`bson:"vuelta" json:"vuelta"` //  [vacío] - 2da - 3ra - 4ta
+	TipoServicio		string					`bson:"tipoServicio" json:"tipoServicio"` // chofer - asistente
 	Recorrido				[]ParadasTran		`json:"recorrido,omitempty"` // si es tipo recorrido
 	KmDesde					int							`json:"kmDesde,omitempty"` // si es tipo rango kilometraje
 	KmHasta					int							`json:"kmHasta,omitempty"` // si es tipo rango kilometraje
