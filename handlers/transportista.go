@@ -397,6 +397,7 @@ func TransportistaHabilitar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Transportista = documentoExistente.Transportista
   documento.Mail = documentoExistente.Mail
+  documento.Factura = documentoExistente.Factura
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = true
@@ -446,6 +447,7 @@ func TransportistaDeshabilitar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Transportista = documentoExistente.Transportista
   documento.Mail = documentoExistente.Mail
+  documento.Factura = documentoExistente.Factura
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = false
@@ -495,6 +497,7 @@ func TransportistaBorrar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Transportista = documentoExistente.Transportista
   documento.Mail = documentoExistente.Mail
+  documento.Factura = documentoExistente.Factura
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = documentoExistente.Activo
@@ -544,6 +547,7 @@ func TransportistaRecuperar(w http.ResponseWriter, req *http.Request) {
   //-------Modificar ###### en forma manual
   documento.Transportista = documentoExistente.Transportista
   documento.Mail = documentoExistente.Mail
+  documento.Factura = documentoExistente.Factura
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = documentoExistente.Activo
@@ -612,6 +616,7 @@ func TransportistaModificar(documentoID bson.ObjectId, documentoModi models.Tran
     "$set": bson.M{
       "transportista": documentoModi.Transportista,
       "mail": documentoModi.Mail,
+      "factura": documentoModi.Factura,
       "contactos": documentoModi.Contactos,
       "tarifarios": documentoModi.Tarifarios,
       "activo": documentoModi.Activo,

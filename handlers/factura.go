@@ -85,7 +85,7 @@ func FacturaAlta(documentoAlta models.Factura, req *http.Request, audit string) 
     selector := bson.M{"_id": item.Viaje_id, "empresa_id": empresaID}
     updator := bson.M{
       "$set": bson.M{
-        "estado": "Cerrado",
+        "estado": "Facturado",
         "factura_id": documento.ID,
         "factura": factura,
         "fechaFacturacion": documento.FechaFacturacion,
