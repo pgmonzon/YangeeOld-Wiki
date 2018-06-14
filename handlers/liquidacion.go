@@ -63,6 +63,12 @@ func LiquidacionAlta(documentoAlta models.Liquidacion, req *http.Request, audit 
   documento = documentoAlta
   objID := bson.NewObjectId()
   documento.ID = objID
+  ultima := LiquidacionUltima(req)
+  if ultima == -1 {
+    s := []string{"INTERNAL_SERVER_ERROR: ", "No encuentro la última liquidación"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError, documento
+  }
+  documento.Liquidacion = ultima + 1
   documento.Empresa_id = empresaID
   documento.Timestamp = time.Now()
   documento.FechaLiquidacion = time.Now()
@@ -210,4 +216,32 @@ func LiquidacionesBuscar(audit string, req *http.Request) (string, string, strin
   // Está todo Ok
   // ************
   return "OK", audit, "Ok", http.StatusOK, documentos
+}
+
+func LiquidacionUltima(req *http.Request) (int) {
+  var documento models.Liquidacion
+  coll := config.DB_Liquidacion
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, _ := core.GetMongoSession()
+  if err != nil {
+    return -1
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).Sort("-liquidacion").Limit(1).One(&documento)
+
+  if documento.ID == "" {
+    return 0
+  }
+  // Existe
+  return documento.Liquidacion
 }

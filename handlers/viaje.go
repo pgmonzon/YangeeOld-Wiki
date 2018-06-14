@@ -573,6 +573,40 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
   return "OK", audit, "Ok", http.StatusOK, documentos
 }
 
+func ViajesBuscar_X_Factura(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, []models.Viaje) {
+  var documentos []models.Viaje
+  coll := config.DB_Viaje
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentos
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "factura_id": documentoID,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
+
+  // Si el resultado es vacío devuelvo ERROR
+  // ***************************************
+  if len(documentos) == 0 {
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
+  }
+
+  // Está todo Ok
+  // ************
+  return "OK", audit, "Ok", http.StatusOK, documentos
+}
+
 func ViajeCancelar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
   var obser models.CanceladoObser
@@ -874,7 +908,7 @@ func ViajesLiquidar_X_Transportista(documentoID bson.ObjectId, audit string, req
   selector := bson.M{
     "empresa_id": empresaID,
     "transportista_id": documentoID,
-    "estado": "Cerrado",
+    "estado": "Facturado",
     "remitos": true,
     "editable": false,
   }

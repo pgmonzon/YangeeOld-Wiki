@@ -10,6 +10,7 @@ type Cliente struct {
 	ID							bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
 	Empresa_id			bson.ObjectId		`bson:"empresa_id" json:"empresa_id,omitempty"`
 	Cliente  				string        	`bson:"cliente" json:"cliente"`
+	Cuit						string					`json:"cuit"`
 	Contactos				[]ContactoClie	`json:"contactos,omitempty"`
 	Tarifarios			[]TarifarioClie	`json:"tarifarios,omitempty"`
 	Activo					bool   					`json:"activo"`
