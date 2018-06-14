@@ -170,6 +170,8 @@ func InicializarRutas() {
 	router.HandleFunc("/factura", handlers.ValidarMiddleware(handlers.FacturaCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/factura/{docID}", handlers.ValidarMiddleware(handlers.FacturaTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/facturas", handlers.ValidarMiddleware(handlers.FacturasTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/facturaViajes/{docID}", handlers.ValidarMiddleware(handlers.FacturaViajesTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/facturasTraerFechas", handlers.ValidarMiddleware(handlers.FacturasTraerFechas, "NO_VALIDAR")).Methods("POST")
 
 	// Liquidaciones
 	// *************

@@ -396,6 +396,7 @@ func ClienteHabilitar(w http.ResponseWriter, req *http.Request) {
   }
   //-------Modificar ###### en forma manual
   documento.Cliente = documentoExistente.Cliente
+  documento.Cuit = documentoExistente.Cuit
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = true
@@ -444,6 +445,7 @@ func ClienteDeshabilitar(w http.ResponseWriter, req *http.Request) {
   }
   //-------Modificar ###### en forma manual
   documento.Cliente = documentoExistente.Cliente
+  documento.Cuit = documentoExistente.Cuit
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = false
@@ -492,6 +494,7 @@ func ClienteBorrar(w http.ResponseWriter, req *http.Request) {
   }
   //-------Modificar ###### en forma manual
   documento.Cliente = documentoExistente.Cliente
+  documento.Cuit = documentoExistente.Cuit
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = documentoExistente.Activo
@@ -540,6 +543,7 @@ func ClienteRecuperar(w http.ResponseWriter, req *http.Request) {
   }
   //-------Modificar ###### en forma manual
   documento.Cliente = documentoExistente.Cliente
+  documento.Cuit = documentoExistente.Cuit
   documento.Contactos = documentoExistente.Contactos
   documento.Tarifarios = documentoExistente.Tarifarios
   documento.Activo = documentoExistente.Activo
@@ -607,6 +611,7 @@ func ClienteModificar(documentoID bson.ObjectId, documentoModi models.Cliente, r
   updator := bson.M{
     "$set": bson.M{
       "cliente": documentoModi.Cliente,
+      "cuit": documentoModi.Cuit,
       "contactos": documentoModi.Contactos,
       "tarifarios": documentoModi.Tarifarios,
       "activo": documentoModi.Activo,

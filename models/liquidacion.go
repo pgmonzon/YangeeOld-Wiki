@@ -9,7 +9,7 @@ import (
 type Liquidacion struct {
 	ID							          bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
 	Empresa_id			          bson.ObjectId		`bson:"empresa_id" json:"empresa_id,omitempty"`
-  Liquidacion               string          `bson:"liquidacion" json:"liquidacion"`
+  Liquidacion               int		          `bson:"liquidacion" json:"liquidacion"`
   Fecha                     time.Time       `bson:"fecha" json:"fecha"`
   Transportista_id          bson.ObjectId		`bson:"transportista_id" json:"transportista_id"`
   Transportista             string          `bson:"transportista" json:"transportista"`

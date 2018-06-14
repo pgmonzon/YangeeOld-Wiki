@@ -16,8 +16,10 @@ type Factura struct {
   Vencimiento               time.Time       `bson:"vencimiento" json:"vencimiento"`
   Cliente_id	   	          bson.ObjectId		`bson:"cliente_id" json:"cliente_id"`
   Cliente                   string          `bson:"cliente" json:"cliente"`
+	Cuit											string					`bson:"cuit" json:"cuit"`
   Descripcion               string          `bson:"descripcion" json:"descripcion"`
   Neto                      float64         `bson:"neto" json:"neto"`
+	NoGravado									float64					`bson:"noGravado" json:"noGravado"`
   Iva105                    float64         `bson:"iva105" json:"iva105"`
   Iva21                     float64         `bson:"iva21" json:"iva21"`
   Total                     float64         `bson:"total" json:"total"`
@@ -34,4 +36,9 @@ type ViajesFact struct {
   FechaHora       time.Time       `bson:"fechaHora" json:"fechaHora"`
   Recorrido       string          `bson:"recorrido" json:"recorrido"`
   Valor           float64	        `bson:"valor" json:"valor"`
+}
+
+type FacturaFechas struct {
+	FechaDesde			time.Time       `bson:"fechaDesde" json:"fechaDesde"`
+	FechaHasta			time.Time       `bson:"fechaHasta" json:"fechaHasta"`
 }
