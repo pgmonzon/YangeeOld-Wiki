@@ -45,7 +45,6 @@ func ViajeCrear(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func ViajeAlta(documentoAlta models.Viaje, req *http.Request, audit string) (string, string, string, int, models.Viaje) {
   //-------------------Modificar ###### las 3 variables
 	var documento models.Viaje

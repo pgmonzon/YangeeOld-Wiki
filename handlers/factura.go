@@ -182,7 +182,6 @@ func FacturasTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
 func FacturasBuscar(audit string, req *http.Request) (string, string, string, int, []models.Factura) {
   var documentos []models.Factura
   coll := config.DB_Factura
