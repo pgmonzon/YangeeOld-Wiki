@@ -150,7 +150,7 @@ func InicializarRutas() {
 	// ******
 	router.HandleFunc("/viaje", handlers.ValidarMiddleware(handlers.ViajeCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viaje/{docID}", handlers.ValidarMiddleware(handlers.ViajeGuardar, "NO_VALIDAR")).Methods("PUT")
-	router.HandleFunc("/viajes/{ano}/{mes}/{dia}", handlers.ValidarMiddleware(handlers.ViajesTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/viajes", handlers.ValidarMiddleware(handlers.ViajesTraer, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeCancelar/{docID}", handlers.ValidarMiddleware(handlers.ViajeCancelar, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/viajeRemitos/{docID}", handlers.ValidarMiddleware(handlers.ViajeRemitos, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/viajesFacturar/{docID}", handlers.ValidarMiddleware(handlers.ViajesFacturar, "NO_VALIDAR")).Methods("POST")
@@ -178,6 +178,8 @@ func InicializarRutas() {
 	router.HandleFunc("/liquidacion", handlers.ValidarMiddleware(handlers.LiquidacionCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/liquidacion/{docID}", handlers.ValidarMiddleware(handlers.LiquidacionTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/liquidaciones", handlers.ValidarMiddleware(handlers.LiquidacionesTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/liquidacionViajes/{docID}", handlers.ValidarMiddleware(handlers.LiquidacionViajesTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/liquidacionFactura/{docID}", handlers.ValidarMiddleware(handlers.LiquidacionFacturaTransportista, "NO_VALIDAR")).Methods("PUT")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})

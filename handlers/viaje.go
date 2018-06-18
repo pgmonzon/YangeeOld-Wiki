@@ -5,7 +5,6 @@ import (
   "net/http"
   "strings"
   "time"
-  "strconv"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -106,7 +105,7 @@ func ViajeAlta(documentoAlta models.Viaje, req *http.Request, audit string) (str
   documento.UsuarioFacturacion_id = config.FakeID
   documento.UsuarioFacturacion = ""
   documento.Liquidacion_id = config.FakeID
-  documento.Liquidacion = ""
+  documento.Liquidacion = 0
   documento.FechaLiquidacion = time.Time{}
   documento.UsuarioLiquidacion_id = config.FakeID
   documento.UsuarioLiquidacion = ""
@@ -509,18 +508,21 @@ func Viaje_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (str
 }
 
 func ViajesTraer(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ###### estas 2 variables
-  var documento models.Viaje
+  var documento models.ViajesFechas
   var documentos []models.Viaje
-  vars := mux.Vars(req)
-  ano, _ := strconv.Atoi(vars["ano"])
-  mes, _ := strconv.Atoi(vars["mes"])
-  dia, _ := strconv.Atoi(vars["dia"])
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documento)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
 
   // Busco
   // *****
-  //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentos := ViajesBuscar(documento, ano, mes, dia, "Buscar", req)
+  estado, valor, mensaje, httpStat, documentos := ViajesBuscar(documento, "Buscar", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -535,13 +537,10 @@ func ViajesTraer(w http.ResponseWriter, req *http.Request) {
 }
 
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection
-func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit string, req *http.Request) (string, string, string, int, []models.Viaje) {
-  //----------------------Modificar ###### estas 2 variables
+func ViajesBuscar(documento models.ViajesFechas, audit string, req *http.Request) (string, string, string, int, []models.Viaje) {
   var documentos []models.Viaje
   coll := config.DB_Viaje
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
-  //fechaDesde := time.Date(ano, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
-  //fechaHasta := time.Date(ano, time.Month(mes), dia, 23, 59, 59, 999999999, time.UTC)
 
   // Genero una nueva sesión Mongo
   // *****************************
@@ -553,10 +552,9 @@ func ViajesBuscar(documento models.Viaje, ano int, mes int, dia int, audit strin
 
   // Trato de traerlos
   // *****************
-  //----------Modificar ###### en forma manual
   selector := bson.M{
     "empresa_id": empresaID,
-    //"fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
+    "fechaHora": bson.M{"$gte": documento.FechaDesde, "$lte": documento.FechaHasta},
   }
   collection := session.DB(config.DB_Name).C(coll)
   collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
@@ -591,6 +589,40 @@ func ViajesBuscar_X_Factura(documentoID bson.ObjectId, audit string, req *http.R
   selector := bson.M{
     "empresa_id": empresaID,
     "factura_id": documentoID,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
+
+  // Si el resultado es vacío devuelvo ERROR
+  // ***************************************
+  if len(documentos) == 0 {
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
+  }
+
+  // Está todo Ok
+  // ************
+  return "OK", audit, "Ok", http.StatusOK, documentos
+}
+
+func ViajesBuscar_X_Liquidacion(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, []models.Viaje) {
+  var documentos []models.Viaje
+  coll := config.DB_Viaje
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentos
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "liquidacion_id": documentoID,
   }
   collection := session.DB(config.DB_Name).C(coll)
   collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&documentos)
