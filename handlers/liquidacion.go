@@ -184,7 +184,6 @@ func LiquidacionesTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
 func LiquidacionesBuscar(audit string, req *http.Request) (string, string, string, int, []models.Liquidacion) {
   var documentos []models.Liquidacion
   coll := config.DB_Liquidacion

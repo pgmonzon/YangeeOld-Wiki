@@ -60,6 +60,7 @@ const(
   DB_Autorizacion = "autorizaciones"
   DB_Factura = "facturas"
   DB_Liquidacion = "liquidaciones"
+  DB_Rendicion = "rendiciones"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
