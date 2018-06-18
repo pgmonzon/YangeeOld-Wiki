@@ -245,3 +245,110 @@ func LiquidacionUltima(req *http.Request) (int) {
   // Existe
   return documento.Liquidacion
 }
+
+func LiquidacionViajesTraer(w http.ResponseWriter, req *http.Request) {
+  var documentos []models.Viaje
+  vars := mux.Vars(req)
+  ID := vars["docID"]
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco
+  // *****
+  //----------------------------------------------Modificar ######
+  estado, valor, mensaje, httpStat, documentos := ViajesBuscar_X_Liquidacion(documentoID, "Buscar por liquidación", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documentos)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func LiquidacionFacturaTransportista(w http.ResponseWriter, req *http.Request) {
+  //-------------------Modificar ######
+  var documento models.LiquidacionFactura
+  vars := mux.Vars(req)
+  ID := vars["docID"]
+  audit := "Factura Transportista"
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documento)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Modifico
+  // ********
+  //----------------------------------Modificar ######
+  estado, valor, mensaje, httpStat := LiquidacionFacturaRecibida(documentoID, documento, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  //------------------------------------Modificar ######
+  s := []string{"Recibiste la factura"}
+  //--------------------------------------Modificar ######
+  core.RspMsgJSON(w, req, "OK", "Recibiste la factura", strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
+func LiquidacionFacturaRecibida(documentoID bson.ObjectId, documento models.LiquidacionFactura, req *http.Request, audit string) (string, string, string, int) {
+  coll := config.DB_Liquidacion
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat
+  }
+  defer session.Close()
+
+  // Intento la modificación
+  // ***********************
+  //-------------------Modificar ###### en forma manual
+  collection := session.DB(config.DB_Name).C(coll)
+  selector := bson.M{"_id": documentoID, "empresa_id": empresaID}
+  updator := bson.M{
+    "$set": bson.M{
+      "facturaTransportista": documento.FacturaTransportista,
+      "timestamp": time.Now(),
+    },
+  }
+  err = collection.Update(selector, updator)
+  if err != nil {
+    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError
+  }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, coll, documentoID, audit, "Recibiste la factura")
+  return "OK", audit, "Ok", http.StatusOK
+}

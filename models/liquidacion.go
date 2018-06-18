@@ -23,6 +23,7 @@ type Liquidacion struct {
   FechaLiquidacion          time.Time       `bson:"fechaLiquidacion" json:"fechaLiquidacion"`
   UsuarioLiquidacion_id     bson.ObjectId   `bson:"usuarioLiquidacion_id" json:"usuarioLiquidacion_id"`
   UsuarioLiquidacion        string          `bson:"usuarioLiquidacion" json:"usuarioLiquidacion"`
+	FacturaTransportista			string					`bson:"facturaTransportista" json:"facturaTransportista"`
 	Timestamp	     			      time.Time				`bson:"timestamp" json:"timestamp"`
 }
 
@@ -31,4 +32,8 @@ type ViajesLiq struct {
   FechaHora       time.Time       `bson:"fechaHora" json:"fechaHora"`
   Recorrido       string          `bson:"recorrido" json:"recorrido"`
   Valor           float64	        `bson:"valor" json:"valor"`
+}
+
+type LiquidacionFactura struct {
+	FacturaTransportista			string					`bson:"facturaTransportista" json:"facturaTransportista"`
 }

@@ -59,7 +59,7 @@ type Viaje struct {
   UsuarioFacturacion_id     bson.ObjectId   `bson:"usuarioFacturacion_id" json:"usuarioFacturacion_id"`
   UsuarioFacturacion        string          `bson:"usuarioFacturacion" json:"usuarioFacturacion"`
   Liquidacion_id            bson.ObjectId   `bson:"liquidacion_id" json:"liquidacion_id"` // id de la factura
-  Liquidacion               string          `bson:"liquidacion" json:"liquidacion"` // 478
+  Liquidacion               int		          `bson:"liquidacion" json:"liquidacion"` // 478
   FechaLiquidacion          time.Time       `bson:"fechaLiquidacion" json:"fechaLiquidacion"`
   UsuarioLiquidacion_id     bson.ObjectId   `bson:"usuarioLiquidacion_id" json:"usuarioLiquidacion_id"`
   UsuarioLiquidacion        string          `bson:"usuarioLiquidacion" json:"usuarioLiquidacion"`
@@ -74,4 +74,9 @@ type ParadasServ struct {
 
 type CanceladoObser struct {
 	Observacion			string					`bson:"observacion" json:"observacion"`
+}
+
+type ViajesFechas struct {
+	FechaDesde			time.Time       `bson:"fechaDesde" json:"fechaDesde"`
+	FechaHasta			time.Time       `bson:"fechaHasta" json:"fechaHasta"`
 }
