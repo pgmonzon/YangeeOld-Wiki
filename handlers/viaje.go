@@ -252,9 +252,11 @@ func TarifaTransportista(documento models.Viaje, req *http.Request) (string, flo
         if documento.Kilometraje > 0 {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
             if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
-              tarifarioTransportista = item.Tarifario
-              tarifaCosto = item.Importe * float64(documento.Kilometraje)
-              return tarifarioTransportista, tarifaCosto
+              if item.Cliente_id == documento.Cliente_id {
+                tarifarioTransportista = item.Tarifario
+                tarifaCosto = item.Importe * float64(documento.Kilometraje)
+                return tarifarioTransportista, tarifaCosto
+              }
             }
           }
         }
@@ -263,9 +265,11 @@ func TarifaTransportista(documento models.Viaje, req *http.Request) (string, flo
         if documento.Kilometraje > 0 && documento.Kilometraje >= item.KmDesde && documento.Kilometraje <= item.KmHasta {
           if item.TipoUnidad_id == config.FakeID || item.TipoUnidad_id == documento.TipoUnidad_id {
             if item.Vuelta == documento.Vuelta && item.TipoServicio == documento.Tipo {
-              tarifarioTransportista = item.Tarifario
-              tarifaCosto = item.Importe
-              return tarifarioTransportista, tarifaCosto
+              if item.Cliente_id == documento.Cliente_id {
+                tarifarioTransportista = item.Tarifario
+                tarifaCosto = item.Importe
+                return tarifarioTransportista, tarifaCosto
+              }
             }
           }
         }
@@ -301,9 +305,11 @@ func TarifaTransportista(documento models.Viaje, req *http.Request) (string, flo
               }
             }
             if encontrados == 1 {
-              tarifarioTransportista = item.Tarifario
-              tarifaCosto = item.Importe
-              return tarifarioTransportista, tarifaCosto
+              if item.Cliente_id == documento.Cliente_id {
+                tarifarioTransportista = item.Tarifario
+                tarifaCosto = item.Importe
+                return tarifarioTransportista, tarifaCosto
+              }
             }
           }
         }
@@ -956,4 +962,36 @@ func ViajesLiquidar_X_Transportista(documentoID bson.ObjectId, audit string, req
   // Está todo Ok
   // ************
   return "OK", audit, "Ok", http.StatusOK, documentos
+}
+
+func ViajesPersonalComisiones(personalID bson.ObjectId, empresaID bson.ObjectId, fechaDesde time.Time, fechaHasta time.Time) (float64) {
+  var viajesMes float64
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, _ := core.GetMongoSession()
+  if err != nil {
+    return 0
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  viajes := make([]models.Viaje, 0)
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "personal_id": personalID,
+    "fechaHora": bson.M{"$gte": fechaDesde, "$lte": fechaHasta},
+  }
+  collection := session.DB(config.DB_Name).C(config.DB_Viaje)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).All(&viajes)
+
+  viajesMes = 0
+  for _, item := range viajes {
+    viajesMes = viajesMes + item.ValorViaje
+  }
+
+  // Está todo Ok
+  // ************
+  return viajesMes
 }

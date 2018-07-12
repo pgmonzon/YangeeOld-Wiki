@@ -28,6 +28,7 @@ type ContactoTran struct {
 type TarifarioTran struct {
 	Tarifario				string					`json:"tarifario"`
 	Tipo						string					`json:"tipo"` // Recorrido - Kilometraje - Rango Kilometraje
+	Cliente_id      bson.ObjectId		`bson:"cliente_id" json:"cliente_id"`
 	TipoUnidad_id		bson.ObjectId		`bson:"tipoUnidad_id" json:"tipoUnidad_id,omitempty"`
 	Vuelta					string					`bson:"vuelta" json:"vuelta"` //  [vacío] - 2da - 3ra - 4ta
 	TipoServicio		string					`bson:"tipoServicio" json:"tipoServicio"` // chofer - asistente
