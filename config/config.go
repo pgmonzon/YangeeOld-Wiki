@@ -29,14 +29,17 @@ const(
 /*
   // Ambiente Desarrollo
   // *******************
-  DB_Host = "localhost"
+  DB_Host = "198.100.45.12:27017"
+  //DB_Host = "localhost"
   DB_Name = "yangee"
-  DB_User = ""
-  DB_Pass = ""
+  DB_User = "yngee"
+  DB_Pass = "1962Laser"
+  //DB_User = ""
+  //DB_Pass = ""
   DB_Timeout = 10 // valor en minutos
   DB_Transaction = "transacciones"
-  privKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
-  pubKeyPath = "C:/Users/Patricio/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
+  privKeyPath = "C:/Users/pgmon/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
+  pubKeyPath = "C:/Users/pgmon/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
 */
   DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Audit = "audit" // auditoría
@@ -63,6 +66,8 @@ const(
   DB_Rendicion = "rendiciones"
   DB_Haberes = "haberes"
   DB_Novedades = "novedades"
+  DB_SbrSucursal = "sbr_sucursal"
+  DB_SbrRubro = "sbr_rubro"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar
