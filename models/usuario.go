@@ -35,3 +35,8 @@ type Sub struct {
 	Title				string					`json:"title"`
 	Ab					string					`json:"ab"`
 }
+
+type UsuarioValidar struct {
+	Usuario			string        	`json:"usuario"`
+	Clave				string					`json:"clave"`
+}
