@@ -29,6 +29,7 @@ func InicializarRutas() {
 	router.HandleFunc("/autorizar", handlers.ValidarMiddleware(handlers.Autorizar, "AUTH")).Methods("POST")
 	router.HandleFunc("/tokenCliente", handlers.ValidarMiddleware(handlers.TokenCliente, "AUTH")).Methods("POST")
 	router.HandleFunc("/empresaInvitacion", handlers.ValidarMiddleware(handlers.EmpresaInvitar, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/usuarioValidar", handlers.ValidarMiddleware(handlers.UsuarioValidar, "NO_VALIDAR")).Methods("POST")
 
 	// RBAC
 	// ****
@@ -211,6 +212,23 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrRubroRecuperar/{docID}", handlers.ValidarMiddleware(handlers.SbrRubroRecuperar, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/sbrRubro/{docID}", handlers.ValidarMiddleware(handlers.SbrRubroTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/sbrRubros/{orden}/{limite}", handlers.ValidarMiddleware(handlers.SbrRubrosTraer, "NO_VALIDAR")).Methods("POST")
+
+	// SbrArticulo
+	// ***********
+	router.HandleFunc("/sbrArticulo", handlers.ValidarMiddleware(handlers.SbrArticuloCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrArticulo/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloGuardar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrArticuloHabilitar/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloHabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrArticuloDeshabilitar/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloDeshabilitar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrArticulo/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/sbrArticuloRecuperar/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloRecuperar, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/sbrArticulo/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/sbrArticulos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.SbrArticulosTraer, "NO_VALIDAR")).Methods("POST")
+
+	// SbrIngresoSucursal
+	// ******************
+	router.HandleFunc("/sbrIngresoSucursal", handlers.ValidarMiddleware(handlers.SbrIngresoSucursalCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrIngresoSucursal/{docID}", handlers.ValidarMiddleware(handlers.SbrIngresoSucursalTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/sbrIngresosSucursales/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrIngresosSucursalesTraer, "NO_VALIDAR")).Methods("POST")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})

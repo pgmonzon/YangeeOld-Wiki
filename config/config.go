@@ -68,6 +68,9 @@ const(
   DB_Novedades = "novedades"
   DB_SbrSucursal = "sbr_sucursal"
   DB_SbrRubro = "sbr_rubro"
+  DB_SbrArticulo = "sbr_articulo"
+  DB_SbrIngresoSucursal = "sbr_ingresoSucursal"
+  DB_SbrStock = "sbr_stock"
 
   // jwt
   ExpiraToken   = 100000 // en minutos - Expiración del token para operar

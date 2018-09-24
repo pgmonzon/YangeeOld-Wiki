@@ -14,6 +14,7 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
+  "github.com/gorilla/context"
 )
 
 func UsuarioCrear(w http.ResponseWriter, req *http.Request) {
@@ -289,4 +290,62 @@ func UsuarioLogin(usuarioLogin string, claveLogin string) (string, string, strin
   // Está todo Ok
   // ************
   return "OK", "Login", "Ok", http.StatusOK, usuario, empresa
+}
+
+func UsuarioValidar(w http.ResponseWriter, req *http.Request) {
+	var documentoValidar models.UsuarioValidar
+  audit := "Validar Usuario"
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documentoValidar)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Valido el usuario
+  // *****************
+  estado, valor, mensaje, httpStat, documento := UsuarioClaveValidar(documentoValidar, req, audit)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Validaste ", documento.Usuario}
+  core.RspMsgJSON(w, req, "OK", documento.Usuario, strings.Join(s, ""), http.StatusAccepted)
+  return
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
+func UsuarioClaveValidar(documentoValidar models.UsuarioValidar, req *http.Request, audit string) (string, string, string, int, models.Usuario) {
+	var documento models.Usuario
+  coll := config.DB_Usuario
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento
+  }
+  defer session.Close()
+
+  // Intento validarlo
+  // *****************
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(bson.M{"empresa_id": empresaID, "usuario": documentoValidar.Usuario, "clave": strconv.FormatInt(core.HashSha512(documentoValidar.Clave),16), "activo": true, "borrado": false}).One(&documento)
+  // Si no valida
+  if documento.ID == "" {
+    s := []string{"Usuario y clave incorrectos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
+  }
+
+  // Está todo Ok
+  // ************
+  core.Audit(req, coll, documento.ID, audit, documento)
+  return "OK", audit, "Ok", http.StatusOK, documento
 }
