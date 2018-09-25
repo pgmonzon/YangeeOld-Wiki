@@ -70,6 +70,7 @@ const(
   DB_SbrRubro = "sbr_rubro"
   DB_SbrArticulo = "sbr_articulo"
   DB_SbrIngresoSucursal = "sbr_ingresoSucursal"
+  DB_SbrRemitoSucursal = "sbr_remitoSucursal"
   DB_SbrStock = "sbr_stock"
 
   // jwt

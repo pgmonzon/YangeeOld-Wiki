@@ -230,6 +230,16 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrIngresoSucursal/{docID}", handlers.ValidarMiddleware(handlers.SbrIngresoSucursalTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/sbrIngresosSucursales/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrIngresosSucursalesTraer, "NO_VALIDAR")).Methods("POST")
 
+	// SbrRemitoSucursal
+	// ******************
+	router.HandleFunc("/sbrRemitoSucursal", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrRemitoSucursal/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalTraer, "NO_VALIDAR")).Methods("GET")
+	router.HandleFunc("/sbrRemitosDeSucursal/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrRemitosDeSucursalTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrRemitosASucursal/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrRemitosASucursalTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrRemitoSucursalCancelar/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalCancelar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrRemitoSucursalAceptar/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalAceptar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrRemitoSucursalRechazar/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalRechazar, "NO_VALIDAR")).Methods("PUT")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
