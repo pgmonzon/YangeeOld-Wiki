@@ -322,6 +322,53 @@ func SbrArticulo_X_ID(documentoID bson.ObjectId, audit string, req *http.Request
   return "OK", audit, "Ok", http.StatusOK, documento
 }
 
+func SbrArticuloCodBarrasTraer(w http.ResponseWriter, req *http.Request) {
+  vars := mux.Vars(req)
+  codBarras := vars["codBarras"]
+
+  // Busco
+  // *****
+  estado, valor, mensaje, httpStat, documento := SbrArticulo_X_CodBarras(codBarras, "Buscar Código Barras", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documento)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+// Devuelve Estado, Valor, Mensaje, HttpStat, collection
+func SbrArticulo_X_CodBarras(codBarras string, audit string, req *http.Request) (string, string, string, int, models.SbrArticulo) {
+  var documento models.SbrArticulo
+  coll := config.DB_SbrArticulo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(bson.M{"codigoBarras": codBarras, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
+  // No existe
+  if documento.ID == "" {
+    s := []string{"No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
+  }
+  // Existe
+  return "OK", audit, "Ok", http.StatusOK, documento
+}
+
 func SbrArticuloGuardar(w http.ResponseWriter, req *http.Request) {
   //-------------------Modificar ######
   var documento models.SbrArticulo
