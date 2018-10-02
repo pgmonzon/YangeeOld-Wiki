@@ -224,6 +224,8 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrArticulo/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/sbrArticuloCodBarras/{codBarras}", handlers.ValidarMiddleware(handlers.SbrArticuloCodBarrasTraer, "NO_VALIDAR")).Methods("GET")
 	router.HandleFunc("/sbrArticulos/{orden}/{limite}", handlers.ValidarMiddleware(handlers.SbrArticulosTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/SbrArticuloStockXID/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloStockXIDTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/SbrArticuloStockXSucursal/{docID}", handlers.ValidarMiddleware(handlers.SbrArticuloStockXSucursalTraer, "NO_VALIDAR")).Methods("POST")
 
 	// SbrIngresoSucursal
 	// ******************
