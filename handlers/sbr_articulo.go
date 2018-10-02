@@ -629,7 +629,6 @@ func SbrArticuloRecuperar(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
 func SbrArticuloModificar(documentoID bson.ObjectId, documentoModi models.SbrArticulo, req *http.Request, audit string) (string, string, string, int) {
   //-------------------Modificar ###### las 2 variables
   camposVacios := "No podés dejar vacío el campo Articulo"
@@ -694,4 +693,139 @@ func SbrArticuloModificar(documentoID bson.ObjectId, documentoModi models.SbrArt
   // ************
   core.Audit(req, coll, documentoID, audit, documentoModi)
   return "OK", audit, "Ok", http.StatusOK
+}
+
+func SbrArticuloStockXIDTraer(w http.ResponseWriter, req *http.Request) {
+  vars := mux.Vars(req)
+  ID := vars["docID"]
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco
+  // *****
+  estado, valor, mensaje, httpStat, documento := SbrArticuloStock_X_ID(documentoID, "Buscar Stock ID", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documento)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func SbrArticuloStock_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.SbrArticuloStock) {
+  var documento models.SbrArticuloStock
+  var articulo models.SbrArticulo
+  var stock []models.SbrDetStock
+  var total int32
+  coll := config.DB_SbrArticulo
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(bson.M{"_id": documentoID, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&articulo)
+  // No existe
+  if articulo.ID == "" {
+    s := []string{"No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
+  }
+  // Existe
+  documento.SbrArticulo_id = articulo.ID
+  documento.SbrArticulo = articulo.SbrArticulo
+
+  // Obtengo el Stock
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "articulo_id": documento.SbrArticulo_id,
+  }
+  collStock := session.DB(config.DB_Name).C(config.DB_SbrStock)
+  collStock.Find(selector).Select(bson.M{"sucursal_id":1, "sucursal":1, "cantidad":1}).Sort("sucursal").All(&stock)
+  documento.Stock = stock
+
+  for _, item := range stock {
+    total = total + item.Cantidad
+  }
+  documento.Total = total
+
+
+  return "OK", audit, "Ok", http.StatusOK, documento
+}
+
+func SbrArticuloStockXSucursalTraer(w http.ResponseWriter, req *http.Request) {
+  vars := mux.Vars(req)
+  ID := vars["docID"]
+
+  // Verifico el formato del campo ID
+  // ********************************
+  if bson.IsObjectIdHex(ID) != true {
+    core.RspMsgJSON(w, req, "ERROR", ID, "INVALID_PARAMS: Formato ID incorrecto", http.StatusBadRequest)
+    return
+  }
+  documentoID := bson.ObjectIdHex(ID)
+
+  // Busco
+  // *****
+  estado, valor, mensaje, httpStat, documento := SbrArticuloStock_X_Sucursal(documentoID, "Buscar Stock Sucursal", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documento)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func SbrArticuloStock_X_Sucursal(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, []models.SbrStockSucursal) {
+  var documentos []models.SbrStockSucursal
+  coll := config.DB_SbrStock
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentos
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "sucursal_id": documentoID,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"articulo_id":1, "articulo":1, "cantidad":1}).Sort("articulo").All(&documentos)
+
+  // Si el resultado es vacío devuelvo ERROR
+  // ***************************************
+  if len(documentos) == 0 {
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
+  }
+
+  return "OK", audit, "Ok", http.StatusOK, documentos
 }

@@ -36,3 +36,22 @@ type SbrStock struct {
   SbrArticulo     string          `bson:"articulo" json:"articulo"`
   Cantidad        int32           `bson:"cantidad" json:"cantidad"`
 }
+
+type SbrStockSucursal struct {
+	SbrArticulo_id  bson.ObjectId   `bson:"articulo_id" json:"articulo_id,omitempty"`
+  SbrArticulo     string          `bson:"articulo" json:"articulo"`
+  Cantidad        int32           `bson:"cantidad" json:"cantidad"`
+}
+
+type SbrArticuloStock struct {
+	SbrArticulo_id  bson.ObjectId   `bson:"articulo_id" json:"articulo_id,omitempty"`
+  SbrArticulo     string          `bson:"articulo" json:"articulo"`
+  Total		        int32           `bson:"total" json:"total"`
+	Stock						[]SbrDetStock		`bson:"stock" json:"stock"`
+}
+
+type SbrDetStock struct {
+	SbrSucursal_id  bson.ObjectId   `bson:"sucursal_id" json:"sucursal_id,omitempty"`
+  SbrSucursal     string          `bson:"sucursal" json:"sucursal"`
+  Cantidad        int32           `bson:"cantidad" json:"cantidad"`
+}
