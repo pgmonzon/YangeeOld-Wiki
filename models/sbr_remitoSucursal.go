@@ -29,3 +29,8 @@ type SbrRemitoSucursalDetalle struct {
   SbrArticulo     string          `bson:"articulo" json:"articulo"`
   Cantidad        int32           `bson:"cantidad" json:"cantidad"`
 }
+
+type SbrRemitoSucursalAceptarRechazar struct {
+	Recibio_id      bson.ObjectId                 `bson:"recibio_id" json:"recibio_id"`
+  Recibio         string                        `bson:"recibio" json:"recibio"`
+}
