@@ -243,6 +243,14 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrRemitoSucursalAceptar/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalAceptar, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/sbrRemitoSucursalRechazar/{docID}", handlers.ValidarMiddleware(handlers.SbrRemitoSucursalRechazar, "NO_VALIDAR")).Methods("PUT")
 
+	// SbrVentas
+	// ***********
+	router.HandleFunc("/sbrVentas", handlers.ValidarMiddleware(handlers.SbrVentasCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasTraer/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrVentasTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasDetalle", handlers.ValidarMiddleware(handlers.SbrVentasDetalleCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasDetalle/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/sbrVentasDetalleTraer/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleTraer, "NO_VALIDAR")).Methods("POST")
+
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
 	allowedMethods := gorillaHnd.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
 	allowedHeaders := gorillaHnd.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"})
