@@ -36,6 +36,7 @@ func InicializarRutas() {
 	router.HandleFunc("/permiso", handlers.ValidarMiddleware(handlers.PermisoCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/rol", handlers.ValidarMiddleware(handlers.RolCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/usuario", handlers.ValidarMiddleware(handlers.UsuarioCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/usuariosEmpresa", handlers.ValidarMiddleware(handlers.UsuariosEmpresa, "NO_VALIDAR")).Methods("POST")
 
 	// Filosofos
 	// *********
@@ -248,7 +249,7 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrVentas", handlers.ValidarMiddleware(handlers.SbrVentasCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/sbrVentasTraer/{orden}/{limite}/{sucursal}", handlers.ValidarMiddleware(handlers.SbrVentasTraer, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/sbrVentasDetalle", handlers.ValidarMiddleware(handlers.SbrVentasDetalleCrear, "NO_VALIDAR")).Methods("POST")
-	router.HandleFunc("/sbrVentasDetalle/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleBorrar, "NO_VALIDAR")).Methods("DELETE")
+	router.HandleFunc("/sbrVentasDetalle/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleBorrar, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/sbrVentasDetalleTraer/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleTraer, "NO_VALIDAR")).Methods("POST")
 
 	allowedOrigins := gorillaHnd.AllowedOrigins([]string{"*"})
