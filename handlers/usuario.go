@@ -14,6 +14,7 @@ import (
 
   "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
+  "github.com/gorilla/context"
 )
 
 func UsuarioCrear(w http.ResponseWriter, req *http.Request) {
@@ -317,4 +318,58 @@ func UsuarioValidar(w http.ResponseWriter, req *http.Request) {
   core.FatalErr(error)
   core.RspJSON(w, req, respuesta, http.StatusOK)
   return
+}
+
+func UsuariosEmpresa(w http.ResponseWriter, req *http.Request) {
+  var documentos []models.UsuariosEmpresa
+
+  // Busco
+  // *****
+  estado, valor, mensaje, httpStat, documentos := UsuariosEmpresaBuscar("Buscar", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(documentos)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
+}
+
+func UsuariosEmpresaBuscar(audit string, req *http.Request) (string, string, string, int, []models.UsuariosEmpresa) {
+  var documentos []models.UsuariosEmpresa
+  coll := config.DB_Usuario
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentos
+  }
+  defer session.Close()
+
+  // Trato de traerlos
+  // *****************
+  selector := bson.M{
+    "empresa_id": empresaID,
+    "activo": true,
+    "borrado": false,
+  }
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(selector).Select(bson.M{"empresa_id":0}).Sort("apellido").All(&documentos)
+
+  // Si el resultado es vacío devuelvo ERROR
+  // ***************************************
+  if len(documentos) == 0 {
+    s := []string{"No encontré documentos"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
+  }
+
+  // Está todo Ok
+  // ************
+  return "OK", audit, "Ok", http.StatusOK, documentos
 }

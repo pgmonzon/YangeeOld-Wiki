@@ -40,3 +40,10 @@ type UsuarioValidar struct {
 	Usuario			string        	`json:"usuario"`
 	Clave				string					`json:"clave"`
 }
+
+type UsuariosEmpresa struct {
+	ID					bson.ObjectId	 	`bson:"_id" json:"id,omitempty"`
+	Usuario			string        	`json:"usuario"`
+	Apellido		string					`json:"apellido"`
+	Nombre			string					`json:"nombre"`
+}
