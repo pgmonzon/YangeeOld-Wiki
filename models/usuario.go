@@ -19,21 +19,7 @@ type Usuario struct {
 	Roles				[]IdRol					`json:"roles"`
 	Menu				[]Opcion				`json:"menu, omitempty"`
 	Timestamp		time.Time				`json:"timestamp, omitempty"`
-}
-
-type Opcion struct {
-	Path				string					`json:"path"`
-	Type				string					`json:"type"`
-	Title				string					`json:"title"`
-	Icontype		string					`json:"icontype"`
-	Collapse		string					`json:"collapse, omitempty"`
-	Children		[]Sub						`json:"children,omitempty"`
-}
-
-type Sub struct {
-	Path				string					`json:"path"`
-	Title				string					`json:"title"`
-	Ab					string					`json:"ab"`
+	Rol_id			bson.ObjectId	 	`bson:"rol_id" json:"rol_id"`
 }
 
 type UsuarioValidar struct {

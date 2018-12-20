@@ -168,7 +168,7 @@ func Permiso_X_ID(permisoID bson.ObjectId) (string, string, string, int, models.
   // Existe
   return "OK", "BuscarPermiso", "Ok", http.StatusOK, permiso
 }
-
+/*
 func RolCrear(w http.ResponseWriter, req *http.Request) {
 	var rol models.Rol
 
@@ -323,3 +323,4 @@ func Rol_X_ID(rolID bson.ObjectId) (string, string, string, int, models.Rol) {
   // Existe
   return "OK", "BuscarRol", "Ok", http.StatusOK, rol
 }
+*/
