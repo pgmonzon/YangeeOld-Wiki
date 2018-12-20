@@ -60,7 +60,7 @@ func SbrVentasAlta(documentoAlta models.SbrVentasCrear, req *http.Request, audit
 
   // Me aseguro el índice
   // ********************
-  indice := []string{"fecha"}
+  indice := []string{"fecha", "sucursal_id"}
   collection := session.DB(config.DB_Name).C(coll)
   index := mgo.Index{
     Key:        indice,

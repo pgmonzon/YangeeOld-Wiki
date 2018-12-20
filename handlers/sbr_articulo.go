@@ -47,7 +47,7 @@ func SbrArticuloCrear(w http.ResponseWriter, req *http.Request) {
   // Doy de alta
   // ***********
   //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := SbrArticuloAlta(documento, req, audit)
+  estado, valor, mensaje, httpStat, documento, existia := SbrArticuloAlta(documento, req, audit, true)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -66,8 +66,55 @@ func SbrArticuloCrear(w http.ResponseWriter, req *http.Request) {
   return
 }
 
+func SbrArticuloImportar(w http.ResponseWriter, req *http.Request) {
+	var documentos []models.SbrArticuloImportar
+  var documento models.SbrArticulo
+  audit := "Importar"
+
+  // Decode del JSON
+  // ***************
+  decoder := json.NewDecoder(req.Body)
+  err := decoder.Decode(&documentos)
+  if err != nil {
+    core.RspMsgJSON(w, req, "ERROR", "JSON", "INVALID_PARAMS: JSON decode erróneo", http.StatusBadRequest)
+    return
+  }
+
+  // Recorro los registros
+  // *********************
+  for _, item := range documentos {
+    // obtengo el rubro
+    estado, valor, mensaje, httpStat, docRubro := SbrRubro_X_Rubro(item.Rubro, "Buscar Rubro", req)
+    if httpStat != http.StatusOK {
+      core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+      return
+    }
+
+    documento.Activo = true
+    documento.Rubro_id = docRubro.ID
+    documento.Rubro = item.Rubro
+    documento.SbrArticulo = item.Articulo
+    documento.CodigoBarras = item.CodigoBarras
+    documento.Precio = item.Precio
+    documento.EsPromo = false
+
+    // Doy de alta
+    estado, valor, mensaje, httpStat, _, _ = SbrArticuloAlta(documento, req, audit, false)
+    if httpStat != http.StatusOK {
+      core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+      return
+    }
+  }
+
+  // Está todo Ok
+  // ************
+  s := []string{"Importaste Artículos"}
+  core.RspMsgJSON(w, req, "OK", "Importar Artículos", strings.Join(s, ""), http.StatusCreated)
+  return
+}
+
 // Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func SbrArticuloAlta(documentoAlta models.SbrArticulo, req *http.Request, audit string) (string, string, string, int, models.SbrArticulo, bool) {
+func SbrArticuloAlta(documentoAlta models.SbrArticulo, req *http.Request, audit string, validaExistente bool) (string, string, string, int, models.SbrArticulo, bool) {
   //-------------------Modificar ###### las 3 variables
 	var documento models.SbrArticulo
   camposVacios := "No podés dejar vacío el campo Articulo"
@@ -86,31 +133,35 @@ func SbrArticuloAlta(documentoAlta models.SbrArticulo, req *http.Request, audit 
   // ********************
   //-----------------------------------------------------Modificar ######--------------Modificar ######
   estado, valor, mensaje, httpStat, documento, existia := SbrArticuloExiste(documentoAlta.SbrArticulo, documentoAlta.CodigoBarras, req)
-  if httpStat != http.StatusOK || existia == true {
-    return estado, valor, mensaje, httpStat, documento, existia
+  if validaExistente == true {
+    if httpStat != http.StatusOK || existia == true {
+      return estado, valor, mensaje, httpStat, documento, existia
+    }
   }
 
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento, false
-  }
-  defer session.Close()
+  if existia == false {
+    // Genero una nueva sesión Mongo
+    // *****************************
+    session, err, httpStat := core.GetMongoSession()
+    if err != nil {
+      return "ERROR", "GetMongoSession", err.Error(), httpStat, documento, false
+    }
+    defer session.Close()
 
-  // Intento el alta
-  // ***************
-  documento = documentoAlta
-  objID := bson.NewObjectId()
-  documento.ID = objID
-  documento.Empresa_id = empresaID
-  documento.Timestamp = time.Now()
-  documento.Borrado = false
-  collection := session.DB(config.DB_Name).C(coll)
-  err = collection.Insert(documento)
-  if err != nil {
-    s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError, documento, false
+    // Intento el alta
+    // ***************
+    documento = documentoAlta
+    objID := bson.NewObjectId()
+    documento.ID = objID
+    documento.Empresa_id = empresaID
+    documento.Timestamp = time.Now()
+    documento.Borrado = false
+    collection := session.DB(config.DB_Name).C(coll)
+    err = collection.Insert(documento)
+    if err != nil {
+      s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}
+      return "ERROR", audit, strings.Join(s, ""), http.StatusInternalServerError, documento, false
+    }
   }
 
   // Está todo Ok

@@ -55,3 +55,10 @@ type SbrDetStock struct {
   SbrSucursal     string          `bson:"sucursal" json:"sucursal"`
   Cantidad        int32           `bson:"cantidad" json:"cantidad"`
 }
+
+type SbrArticuloImportar struct {
+	Rubro						string					`bson:"rubro" json:"rubro"`
+	Articulo				string					`bson:"articulo" json:"articulo"`
+	CodigoBarras		string					`bson:"codigoBarras" json:"codigoBarras"`
+	Precio					float64					`bson:"precio" json:"precio"`
+}

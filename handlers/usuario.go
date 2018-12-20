@@ -3,7 +3,7 @@ package handlers
 import (
   "encoding/json"
   "net/http"
-  "fmt"
+  //"fmt"
   "strings"
   "strconv"
   "time"
@@ -178,7 +178,8 @@ func Usuario_X_ID(usuarioID bson.ObjectId) (string, string, string, int, models.
 }
 
 func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
-
+  permisosUsuario := ""
+  /*
   // Genero una nueva sesión Mongo
   // *****************************
   session, err, _ := core.GetMongoSession()
@@ -252,7 +253,7 @@ func UsuarioPermisos(usuarioPermisos string) (string, error, int) {
   }
   permisosStr = append(permisosStr, "#")
   permisosUsuario := strings.Join(permisosStr, "#")
-
+  */
   // Está todo Ok
   // ************
   return permisosUsuario, nil, http.StatusOK

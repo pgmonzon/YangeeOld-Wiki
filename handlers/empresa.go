@@ -5,8 +5,8 @@ import (
   "net/http"
   "strings"
   "time"
-  "strconv"
-  "math/rand"
+  //"strconv"
+  //"math/rand"
 
   "github.com/pgmonzon/Yangee/models"
   "github.com/pgmonzon/Yangee/core"
@@ -170,7 +170,7 @@ func Empresa_X_ID(empresaID bson.ObjectId) (string, string, string, int, models.
   // Existe
   return "OK", "BuscarEmpresa", "Ok", http.StatusOK, empresa
 }
-
+/*
 func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
 	var empresaInvitacion models.EmpresaInvitacion
 
@@ -258,3 +258,4 @@ func EmpresaInvitar(w http.ResponseWriter, req *http.Request) {
   core.RspMsgJSON(w, req, "OK", "Invitación Empresa", "Ok", http.StatusCreated)
   return
 }
+*/

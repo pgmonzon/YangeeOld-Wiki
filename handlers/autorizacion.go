@@ -126,6 +126,14 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
     return
   }
 
+  // Busco el Rol del usuario
+  // ************************
+  estado, valor, mensaje, httpStat, docRol := Rol_X_ID_SinEstado(usuario.Rol_id, "Buscar ID", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
   // Hago el marshal de la autorización
   // **********************************
   var autorizacion models.Autorizacion
@@ -138,7 +146,7 @@ func Autorizar(w http.ResponseWriter, req *http.Request) {
   } else {
     autorizacion.Usuario = strUsr
   }
-  autorizacion.Menu = usuario.Menu
+  autorizacion.Menu = docRol.Menu
   respuesta, err := json.Marshal(autorizacion)
   if err != nil {
     s := []string{"INTERNAL_SERVER_ERROR: ", err.Error()}

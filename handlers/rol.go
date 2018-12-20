@@ -17,22 +17,9 @@ import (
   "github.com/gorilla/mux"
 )
 
-/*
-!!! PONER EL FIND EN CASE SENSITIVE !!!
-*** Reemplazos automáticos ***
-reemplazar SbrRubros (mayúscula plural) 4 apariciones
-reemplazar SbrRubro (mayúscula singular) 76 apariciones
-reemplazar rubro (minúscula singular) 7 apariciones IMPORANTE: no puede tener mayúsculas
-
-*** Reemplazos manuales ***
-reemplazar "No podés dejar vacío" 3 apariciones
-reemplazar "en forma manual" 7 apariciones
-reemplazar "en orden" 2 apariciones
-*/
-
-func SbrRubroCrear(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ###### estas 2 variables
-	var documento models.SbrRubro
+func RolCrear(w http.ResponseWriter, req *http.Request) {
+	var documento models.RolEstado
+  var docCreado models.Rol
   audit := "Crear"
 
   // Decode del JSON
@@ -46,8 +33,7 @@ func SbrRubroCrear(w http.ResponseWriter, req *http.Request) {
 
   // Doy de alta
   // ***********
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := SbrRubroAlta(documento, req, audit)
+  estado, valor, mensaje, httpStat, docCreado, existia := RolAlta(documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -59,33 +45,27 @@ func SbrRubroCrear(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Agregaste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusCreated)
+  s := []string{"Agregaste ", docCreado.Rol}
+  core.RspMsgJSON(w, req, "OK", docCreado.Rol, strings.Join(s, ""), http.StatusCreated)
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func SbrRubroAlta(documentoAlta models.SbrRubro, req *http.Request, audit string) (string, string, string, int, models.SbrRubro, bool) {
-  //-------------------Modificar ###### las 3 variables
-	var documento models.SbrRubro
-  camposVacios := "No podés dejar vacío el campo Categoría"
-  coll := config.DB_SbrRubro
+func RolAlta(documentoAlta models.RolEstado, req *http.Request, audit string) (string, string, string, int, models.Rol, bool) {
+	var documento models.Rol
+  camposVacios := "No podés dejar vacío el campo Rol"
+  coll := config.DB_Rol
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico los campos obligatorios
   // ********************************
-  //---------------Modificar ######
-  if documentoAlta.SbrRubro == "" {
+  if documentoAlta.Rol == "" {
     s := []string{camposVacios}
     return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, false
   }
 
   // Me fijo si ya Existe
   // ********************
-  //-----------------------------------------------------Modificar ######--------------Modificar ######
-  estado, valor, mensaje, httpStat, documento, existia := SbrRubroExiste(documentoAlta.SbrRubro, req)
+  estado, valor, mensaje, httpStat, documento, existia := RolExiste(documentoAlta.Rol, req)
   if httpStat != http.StatusOK || existia == true {
     return estado, valor, mensaje, httpStat, documento, existia
   }
@@ -100,12 +80,27 @@ func SbrRubroAlta(documentoAlta models.SbrRubro, req *http.Request, audit string
 
   // Intento el alta
   // ***************
-  documento = documentoAlta
   objID := bson.NewObjectId()
   documento.ID = objID
   documento.Empresa_id = empresaID
+  documento.Rol = documentoAlta.Rol
+  documento.Activo = documentoAlta.Activo
   documento.Timestamp = time.Now()
   documento.Borrado = false
+  var menu []models.Opcion
+  for _, item := range documentoAlta.Menu {
+    if item.Estado == true {
+      var subMenu []models.Sub
+      for _, subItem := range item.Children {
+        if subItem.Estado == true {
+          subMenu = append(subMenu, models.Sub{Path: subItem.Path, Title: subItem.Title, Ab: subItem.Ab})
+        }
+      }
+      menu = append(menu, models.Opcion{Path: item.Path, Type: item.Type, Title: item.Title, Icontype: item.Icontype, Collapse: item.Collapse, Children: subMenu})
+    }
+  }
+  documento.Menu = menu
+
   collection := session.DB(config.DB_Name).C(coll)
   err = collection.Insert(documento)
   if err != nil {
@@ -119,12 +114,10 @@ func SbrRubroAlta(documentoAlta models.SbrRubro, req *http.Request, audit string
   return "OK", audit, "Ok", http.StatusOK, documento, false
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func SbrRubroExiste(documentoExiste string, req *http.Request) (string, string, string, int, models.SbrRubro, bool) {
-  //-------------------Modificar ###### las 3 variables
-  var documento models.SbrRubro
-  indice := []string{"empresa_id", "rubro"}
-  coll := config.DB_SbrRubro
+func RolExiste(documentoExiste string, req *http.Request) (string, string, string, int, models.Rol, bool) {
+  var documento models.Rol
+  indice := []string{"empresa_id", "rol"}
+  coll := config.DB_Rol
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
@@ -153,8 +146,7 @@ func SbrRubroExiste(documentoExiste string, req *http.Request) (string, string, 
 
   // Verifico si Existe
   // ******************
-  //----------------------------------------------Modificar ######
-  collection.Find(bson.M{"empresa_id": empresaID, "rubro": documentoExiste}).One(&documento)
+  collection.Find(bson.M{"empresa_id": empresaID, "rol": documentoExiste}).One(&documento)
   // No existe
   if documento.ID == "" {
     return "OK", "Buscar", "Ok", http.StatusOK, documento, false
@@ -174,10 +166,9 @@ func SbrRubroExiste(documentoExiste string, req *http.Request) (string, string, 
   return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento, true
 }
 
-func SbrRubrosTraer(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ###### estas 2 variables
-  var documento models.SbrRubro
-  var documentos []models.SbrRubro
+func RolesTraer(w http.ResponseWriter, req *http.Request) {
+  var documento models.Rol
+  var documentos []models.Rol
   vars := mux.Vars(req)
   orden := vars["orden"]
   limite := vars["limite"]
@@ -201,8 +192,7 @@ func SbrRubrosTraer(w http.ResponseWriter, req *http.Request) {
 
   // Busco
   // *****
-  //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentos := SbrRubrosBuscar(documento, orden, limiteInt, false, "Buscar", req)
+  estado, valor, mensaje, httpStat, documentos := RolesBuscar(documento, orden, limiteInt, false, "Buscar", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -216,17 +206,14 @@ func SbrRubrosTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection
-func SbrRubrosBuscar(documento models.SbrRubro, orden string, limiteInt int, borrados bool, audit string, req *http.Request) (string, string, string, int, []models.SbrRubro) {
-  //----------------------Modificar ###### estas 2 variables
-  var documentos []models.SbrRubro
-  coll := config.DB_SbrRubro
+func RolesBuscar(documento models.Rol, orden string, limiteInt int, borrados bool, audit string, req *http.Request) (string, string, string, int, []models.Rol) {
+  var documentos []models.Rol
+  coll := config.DB_Rol
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico que el campo orden sea Unique
   // **************************************
-  //-----------Modificar ######
-  if orden != "rubro" && orden != "-rubro" {
+  if orden != "rol" && orden != "-rol" {
     s := []string{"No puedo ordenar por ", orden}
     return "ERROR", "Buscar", strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentos
   }
@@ -241,10 +228,9 @@ func SbrRubrosBuscar(documento models.SbrRubro, orden string, limiteInt int, bor
 
   // Trato de traerlos
   // *****************
-  //----------Modificar ###### en forma manual
   selector := bson.M{
     "empresa_id": empresaID,
-    "rubro": bson.M{"$regex": bson.RegEx{documento.SbrRubro, "i"}},
+    "rol": bson.M{"$regex": bson.RegEx{documento.Rol, "i"}},
     "borrado": borrados,
   }
   collection := session.DB(config.DB_Name).C(coll)
@@ -262,7 +248,7 @@ func SbrRubrosBuscar(documento models.SbrRubro, orden string, limiteInt int, bor
   return "OK", audit, "Ok", http.StatusOK, documentos
 }
 
-func SbrRubroTraer(w http.ResponseWriter, req *http.Request) {
+func RolTraer(w http.ResponseWriter, req *http.Request) {
   vars := mux.Vars(req)
   ID := vars["docID"]
 
@@ -276,8 +262,7 @@ func SbrRubroTraer(w http.ResponseWriter, req *http.Request) {
 
   // Busco
   // *****
-  //----------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documento := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documento := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -291,11 +276,78 @@ func SbrRubroTraer(w http.ResponseWriter, req *http.Request) {
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, collection
-func SbrRubro_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.SbrRubro) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
-  coll := config.DB_SbrRubro
+func Rol_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.RolEstado) {
+  var documento models.Rol
+  var documentoEstado models.RolEstado
+  coll := config.DB_Rol
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Genero una nueva sesión Mongo
+  // *****************************
+  session, err, httpStat := core.GetMongoSession()
+  if err != nil {
+    return "ERROR", "GetMongoSession", err.Error(), httpStat, documentoEstado
+  }
+  defer session.Close()
+
+  // Trato de traerlo
+  // ****************
+  collection := session.DB(config.DB_Name).C(coll)
+  collection.Find(bson.M{"_id": documentoID, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
+  // No existe
+  if documento.ID == "" {
+    s := []string{"No encuentro el documento"}
+    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documentoEstado
+  }
+
+  // Busco el menu de la empresa
+  // ***************************
+  estado, valor, mensaje, httpStat, docMenu := Menu_X_Empresa(empresaID, "Buscar Empresa", req)
+  if httpStat != http.StatusOK {
+    return estado, valor, mensaje, httpStat, documentoEstado
+  }
+
+  // Preparo el documento a devolver
+  // *******************************
+  documentoEstado.ID = documento.ID
+  documentoEstado.Rol = documento.Rol
+  documentoEstado.Activo = documento.Activo
+  documentoEstado.Borrado = documento.Borrado
+  documentoEstado.Timestamp = documento.Timestamp
+
+  // Pongo los estados de los ítems del menú
+  // ***************************************
+  estadoOpcion := false
+  estadoSub := false
+  var menu []models.OpcionEstado
+  for _, item := range docMenu.Menu {
+    var subMenu []models.SubEstado
+    for _, subItem := range item.Children {
+      estadoOpcion = false
+      estadoSub = false
+      for _, itemEstado := range documento.Menu {
+        if item.Path == itemEstado.Path {
+          estadoOpcion = true
+          for _, subItemEstado := range itemEstado.Children {
+            if subItem.Path == subItemEstado.Path {
+              estadoSub = true
+            }
+          }
+        }
+      }
+      subMenu = append(subMenu, models.SubEstado{Path: subItem.Path, Title: subItem.Title, Ab: subItem.Ab, Estado: estadoSub})
+    }
+    menu = append(menu, models.OpcionEstado{Path: item.Path, Type: item.Type, Title: item.Title, Icontype: item.Icontype, Collapse: item.Collapse, Children: subMenu, Estado: estadoOpcion})
+  }
+  documentoEstado.Menu = menu
+
+  // Existe
+  return "OK", audit, "Ok", http.StatusOK, documentoEstado
+}
+
+func Rol_X_ID_SinEstado(documentoID bson.ObjectId, audit string, req *http.Request) (string, string, string, int, models.Rol) {
+  var documento models.Rol
+  coll := config.DB_Rol
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Genero una nueva sesión Mongo
@@ -315,39 +367,13 @@ func SbrRubro_X_ID(documentoID bson.ObjectId, audit string, req *http.Request) (
     s := []string{"No encuentro el documento"}
     return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
   }
+
   // Existe
   return "OK", audit, "Ok", http.StatusOK, documento
 }
 
-func SbrRubro_X_Rubro(rubro string, audit string, req *http.Request) (string, string, string, int, models.SbrRubro) {
-  var documento models.SbrRubro
-  coll := config.DB_SbrRubro
-  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
-
-  // Genero una nueva sesión Mongo
-  // *****************************
-  session, err, httpStat := core.GetMongoSession()
-  if err != nil {
-    return "ERROR", "GetMongoSession", err.Error(), httpStat, documento
-  }
-  defer session.Close()
-
-  // Trato de traerlo
-  // ****************
-  collection := session.DB(config.DB_Name).C(coll)
-  collection.Find(bson.M{"rubro": rubro, "empresa_id": empresaID}).Select(bson.M{"empresa_id":0}).One(&documento)
-  // No existe
-  if documento.ID == "" {
-    s := []string{"No encuentro el documento -", rubro}
-    return "ERROR", audit, strings.Join(s, ""), http.StatusNonAuthoritativeInfo, documento
-  }
-  // Existe
-  return "OK", audit, "Ok", http.StatusOK, documento
-}
-
-func SbrRubroGuardar(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
+func RolGuardar(w http.ResponseWriter, req *http.Request) {
+  var documento models.RolEstado
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Guardar"
@@ -371,8 +397,7 @@ func SbrRubroGuardar(w http.ResponseWriter, req *http.Request) {
 
   // Busco para obtener los campos faltantes
   // ***************************************
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -381,8 +406,7 @@ func SbrRubroGuardar(w http.ResponseWriter, req *http.Request) {
 
   // Modifico
   // ********
-  //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = SbrRubroModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = RolModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -390,16 +414,13 @@ func SbrRubroGuardar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Guardaste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusAccepted)
+  s := []string{"Guardaste ", documento.Rol}
+  core.RspMsgJSON(w, req, "OK", documento.Rol, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func SbrRubroHabilitar(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
+func RolHabilitar(w http.ResponseWriter, req *http.Request) {
+  var documento models.RolEstado
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Habilitar"
@@ -414,21 +435,19 @@ func SbrRubroHabilitar(w http.ResponseWriter, req *http.Request) {
 
   // Busco para obtener los campos faltantes
   // ***************************************
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-  //-------Modificar ###### en forma manual
-  documento.SbrRubro = documentoExistente.SbrRubro
+  documento.Rol = documentoExistente.Rol
+  documento.Menu = documentoExistente.Menu
   documento.Activo = true
   documento.Borrado = documentoExistente.Borrado
 
   // Modifico
   // ********
-  //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = SbrRubroModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = RolModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -436,16 +455,13 @@ func SbrRubroHabilitar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Habilitaste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusAccepted)
+  s := []string{"Habilitaste ", documento.Rol}
+  core.RspMsgJSON(w, req, "OK", documento.Rol, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func SbrRubroDeshabilitar(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
+func RolDeshabilitar(w http.ResponseWriter, req *http.Request) {
+  var documento models.RolEstado
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Deshabilitar"
@@ -460,21 +476,19 @@ func SbrRubroDeshabilitar(w http.ResponseWriter, req *http.Request) {
 
   // Busco para obtener los campos faltantes
   // ***************************************
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-  //-------Modificar ###### en forma manual
-  documento.SbrRubro = documentoExistente.SbrRubro
+  documento.Rol = documentoExistente.Rol
+  documento.Menu = documentoExistente.Menu
   documento.Activo = false
   documento.Borrado = documentoExistente.Borrado
 
   // Modifico
   // ********
-  //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = SbrRubroModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = RolModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -482,16 +496,13 @@ func SbrRubroDeshabilitar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Deshabilitaste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusAccepted)
+  s := []string{"Deshabilitaste ", documento.Rol}
+  core.RspMsgJSON(w, req, "OK", documento.Rol, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func SbrRubroBorrar(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
+func RolBorrar(w http.ResponseWriter, req *http.Request) {
+  var documento models.RolEstado
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Borrar"
@@ -506,21 +517,19 @@ func SbrRubroBorrar(w http.ResponseWriter, req *http.Request) {
 
   // Busco para obtener los campos faltantes
   // ***************************************
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-  //-------Modificar ###### en forma manual
-  documento.SbrRubro = documentoExistente.SbrRubro
+  documento.Rol = documentoExistente.Rol
+  documento.Menu = documentoExistente.Menu
   documento.Activo = documentoExistente.Activo
   documento.Borrado = true
 
   // Modifico
   // ********
-  //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = SbrRubroModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = RolModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -528,16 +537,13 @@ func SbrRubroBorrar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Borraste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusAccepted)
+  s := []string{"Borraste ", documento.Rol}
+  core.RspMsgJSON(w, req, "OK", documento.Rol, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-func SbrRubroRecuperar(w http.ResponseWriter, req *http.Request) {
-  //-------------------Modificar ######
-  var documento models.SbrRubro
+func RolRecuperar(w http.ResponseWriter, req *http.Request) {
+  var documento models.RolEstado
   vars := mux.Vars(req)
   ID := vars["docID"]
   audit := "Recuperar"
@@ -552,21 +558,19 @@ func SbrRubroRecuperar(w http.ResponseWriter, req *http.Request) {
 
   // Busco para obtener los campos faltantes
   // ***************************************
-  //------------------------------------------------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExistente := SbrRubro_X_ID(documentoID, "Buscar ID", req)
+  estado, valor, mensaje, httpStat, documentoExistente := Rol_X_ID(documentoID, "Buscar ID", req)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
   }
-  //-------Modificar ###### en forma manual
-  documento.SbrRubro = documentoExistente.SbrRubro
+  documento.Rol = documentoExistente.Rol
+  documento.Menu = documentoExistente.Menu
   documento.Activo = documentoExistente.Activo
   documento.Borrado = false
 
   // Modifico
   // ********
-  //----------------------------------Modificar ######
-  estado, valor, mensaje, httpStat = SbrRubroModificar(documentoID, documento, req, audit)
+  estado, valor, mensaje, httpStat = RolModificar(documentoID, documento, req, audit)
   if httpStat != http.StatusOK {
     core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
     return
@@ -574,32 +578,26 @@ func SbrRubroRecuperar(w http.ResponseWriter, req *http.Request) {
 
   // Está todo Ok
   // ************
-  //------------------------------------Modificar ######
-  s := []string{"Recuperaste ", documento.SbrRubro}
-  //--------------------------------------Modificar ######
-  core.RspMsgJSON(w, req, "OK", documento.SbrRubro, strings.Join(s, ""), http.StatusAccepted)
+  s := []string{"Recuperaste ", documento.Rol}
+  core.RspMsgJSON(w, req, "OK", documento.Rol, strings.Join(s, ""), http.StatusAccepted)
   return
 }
 
-// Devuelve Estado, Valor, Mensaje, HttpStat, Collection, Existía
-func SbrRubroModificar(documentoID bson.ObjectId, documentoModi models.SbrRubro, req *http.Request, audit string) (string, string, string, int) {
-  //-------------------Modificar ###### las 2 variables
-  camposVacios := "No podés dejar vacío el campo Categoría"
-  coll := config.DB_SbrRubro
+func RolModificar(documentoID bson.ObjectId, documentoModi models.RolEstado, req *http.Request, audit string) (string, string, string, int) {
+  camposVacios := "No podés dejar vacío el campo Rol"
+  coll := config.DB_Rol
   empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
 
   // Verifico los campos obligatorios
   // ********************************
-  //---------------Modificar ######
-  if documentoModi.SbrRubro == "" {
+  if documentoModi.Rol == "" {
     s := []string{camposVacios}
     return "ERROR", "Alta", strings.Join(s, ""), http.StatusNonAuthoritativeInfo
   }
 
   // Me fijo si ya Existe la clave única
   // ***********************************
-  //------------------------------------------------------Modificar ######-------------Modificar ######
-  estado, valor, mensaje, httpStat, documentoExiste, _ := SbrRubroExiste(documentoModi.SbrRubro, req)
+  estado, valor, mensaje, httpStat, documentoExiste, _ := RolExiste(documentoModi.Rol, req)
   if httpStat == http.StatusInternalServerError {
     return estado, valor, mensaje, httpStat
   }
@@ -617,14 +615,27 @@ func SbrRubroModificar(documentoID bson.ObjectId, documentoModi models.SbrRubro,
 
   // Intento la modificación
   // ***********************
-  //-------------------Modificar ###### en forma manual
   documentoModi.ID = documentoID
   documentoModi.Empresa_id = empresaID
+  var menu []models.Opcion
+  for _, item := range documentoModi.Menu {
+    if item.Estado == true {
+      var subMenu []models.Sub
+      for _, subItem := range item.Children {
+        if subItem.Estado == true {
+          subMenu = append(subMenu, models.Sub{Path: subItem.Path, Title: subItem.Title, Ab: subItem.Ab})
+        }
+      }
+      menu = append(menu, models.Opcion{Path: item.Path, Type: item.Type, Title: item.Title, Icontype: item.Icontype, Collapse: item.Collapse, Children: subMenu})
+    }
+  }
+
   collection := session.DB(config.DB_Name).C(coll)
   selector := bson.M{"_id": documentoID, "empresa_id": empresaID}
   updator := bson.M{
     "$set": bson.M{
-      "rubro": documentoModi.SbrRubro,
+      "rol": documentoModi.Rol,
+      "menu": menu,
       "activo": documentoModi.Activo,
       "borrado": documentoModi.Borrado,
       "timestamp": time.Now(),
@@ -640,4 +651,23 @@ func SbrRubroModificar(documentoID bson.ObjectId, documentoModi models.SbrRubro,
   // ************
   core.Audit(req, coll, documentoID, audit, documentoModi)
   return "OK", audit, "Ok", http.StatusOK
+}
+
+func RolMenuEmpresa(w http.ResponseWriter, req *http.Request) {
+  empresaID := context.Get(req, "Empresa_id").(bson.ObjectId)
+
+  // Busco el menu de la empresa
+  // ***************************
+  estado, valor, mensaje, httpStat, docMenu := Menu_X_Empresa(empresaID, "Buscar Menú Empresa", req)
+  if httpStat != http.StatusOK {
+    core.RspMsgJSON(w, req, estado, valor, mensaje, httpStat)
+    return
+  }
+
+  // Está todo Ok
+  // ************
+  respuesta, error := json.Marshal(docMenu)
+  core.FatalErr(error)
+  core.RspJSON(w, req, respuesta, http.StatusOK)
+  return
 }
