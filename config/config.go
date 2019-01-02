@@ -15,7 +15,7 @@ const(
   RegistrarCicloDeVida = false
   RegistrarAudit = false
   Produccion = false
-/*
+
   // Ambiente producción
   // *******************
   //DB_Host = "198.100.45.12:27017"
@@ -27,7 +27,7 @@ const(
   DB_Transaction = "transacciones"
   privKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "/usr/local/go/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-*/
+/*
   // Ambiente Desarrollo
   // *******************
   DB_Host = "198.100.45.12:27017"
@@ -41,7 +41,7 @@ const(
   DB_Transaction = "transacciones"
   privKeyPath = "C:/Users/pgmon/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa"
   pubKeyPath = "C:/Users/pgmon/Google Drive/proyectoYangee/codigoGo/src/github.com/pgmonzon/Yangee/config/keys/app.rsa.pub"
-
+*/
   DB_CicloVida = "cicloVida" // ciclo de vida
   DB_Audit = "audit" // auditoría
   DB_Modulo = "modulos" // módulos del sistema
@@ -75,6 +75,7 @@ const(
   DB_SbrStock = "sbr_stock"
   DB_SbrVentas = "sbr_ventas"
   DB_SbrVentasDetalle = "sbr_ventasDetalle"
+  DB_SbrVentasGastos = "sbr_ventasGastos"
   DB_Menu = "menues"
 
   // jwt
