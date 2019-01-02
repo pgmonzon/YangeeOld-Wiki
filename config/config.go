@@ -75,6 +75,7 @@ const(
   DB_SbrStock = "sbr_stock"
   DB_SbrVentas = "sbr_ventas"
   DB_SbrVentasDetalle = "sbr_ventasDetalle"
+  DB_SbrVentasGastos = "sbr_ventasGastos"
   DB_Menu = "menues"
 
   // jwt

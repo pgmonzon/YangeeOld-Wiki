@@ -252,6 +252,10 @@ func InicializarRutas() {
 	router.HandleFunc("/sbrVentasDetalle", handlers.ValidarMiddleware(handlers.SbrVentasDetalleCrear, "NO_VALIDAR")).Methods("POST")
 	router.HandleFunc("/sbrVentasDetalle/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleBorrar, "NO_VALIDAR")).Methods("PUT")
 	router.HandleFunc("/sbrVentasDetalleTraer/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasDetalleTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasGastos", handlers.ValidarMiddleware(handlers.SbrVentasGastoCrear, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasGastos/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasGastoBorrar, "NO_VALIDAR")).Methods("PUT")
+	router.HandleFunc("/sbrVentasGastosTraer/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasGastoTraer, "NO_VALIDAR")).Methods("POST")
+	router.HandleFunc("/sbrVentasCerrarCaja/{docID}", handlers.ValidarMiddleware(handlers.SbrVentasCerrarCaja, "NO_VALIDAR")).Methods("PUT")
 
 	// Roles
 	// *****
